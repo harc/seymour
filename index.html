@@ -1,0 +1,118 @@
+<html>
+  <body>
+    <!-- 3rd-party stuff -->
+    <script src="3rdparty/ohm.min.js"></script>
+    <script src="3rdparty/jquery-3.2.1.min.js"></script>
+    <script src="3rdparty/codemirror.js"></script>
+    <link rel="stylesheet" href="3rdparty/codemirror.css">
+
+    <!-- the interpreter -->
+    <script src="activations.js"></script>
+    <script src="asts.js"></script>
+    <script src="builtins.js"></script>
+    <script src="instructions.js"></script>
+    <script src="BlockClosure.js"></script>
+    <script src="Class.js"></script>
+    <script src="Interpreter.js"></script>
+    <script src="Method.js"></script>
+    <script src="Obj.js"></script>
+
+    <!-- syntax stuff -->
+    <script src="grammar.js"></script>
+    <script src="toAST.js"></script>
+
+    <!-- other stuff -->
+    <link rel="stylesheet" href="style.css">
+    <textarea id="myTextArea"></textarea>
+
+    <script>
+
+"use strict";
+
+const DEBUG = false;
+console.debug = function(...args) {
+  if (DEBUG) {
+    console.log(...args);
+  }
+};
+
+let interpreter;
+let timeoutId;
+
+function run(optCode) {
+  if (optCode) {
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId);
+    }
+    interpreter = new Interpreter(optCode);
+  }
+
+  const done = interpreter.runForMillis(30);
+  if (done) {
+    timeoutId = null;
+    console.log('(done)');
+  } else {
+    timeoutId = setTimeout(run, 0);
+  }
+}
+
+let parseErrorWidget;
+const m = seymourGrammar.matcher();
+
+const editor = CodeMirror.fromTextArea(myTextArea, { lineNumbers: true });
+
+editor.on('beforeChange', function(cmInstance, changeObj) {
+  var insertedText = changeObj.text.join('\n');
+  var fromIdx = editor.indexFromPos(changeObj.from);
+  var toIdx = editor.indexFromPos(changeObj.to);
+  m.replaceInputRange(fromIdx, toIdx, insertedText);
+});
+
+editor.on('change', function(cmInstance, changeObj) {
+  if (parseErrorWidget) {
+    editor.removeLineWidget(parseErrorWidget);
+    parseErrorWidget = undefined;
+  }
+
+  localStorage.setItem('program', editor.getValue());
+
+  const r = m.match();
+  if (r.succeeded()) {
+    // console.clear();
+    const ast = toAST(r);
+    console.debug('ast', ast);
+    const code = ast.toInstruction(new IDone());
+    console.debug('code', code);
+    run(code);
+  } else {
+    const expected = r.getExpectedText();
+    const pos = editor.doc.posFromIndex(r.getRightmostFailurePosition());
+    const error = document.createElement('parseError');
+    error.innerText = spaces(pos.ch) + '^\nExpected: ' + expected;
+    parseErrorWidget = editor.addLineWidget(pos.line, error);
+    $(error).hide().delay(2000).slideDown().queue(() => editor.refresh());
+  }
+
+  function spaces(n) {
+    let str = '';
+    while (n-- > 0) {
+      str += ' ';
+    }
+    return str;
+  }
+});
+
+const sampleProgram = `"hello world".println();
+
+(3 + 4).println();
+
+var sum = 0;
+for 1 to: 10 do: {x |
+  sum = sum + x;
+};
+sum.println();`;
+editor.setValue(localStorage.getItem('program') || sampleProgram);
+
+    </script>
+  </body>
+</html>

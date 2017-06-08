@@ -1,0 +1,103 @@
+Evaluator
+  * globalActivation : Activation
+  * currentActivation : Activation
+  + step() : Boolean
+  + run() : Void
+
+Activation
+  * args : Array<Object>
+  * vars : Map<String, Object>
+  * parent : Activation
+  * caller : Activation
+  * stack : Array<Object>
+  * nextInstruction : Instruction
+  + methodActivation : MethodActivation
+  + step() : Activation
+  + iPush(value : Object) : Activation
+  + iDrop() : Activation
+  + iNonLocalReturn(value : Object) : Activation
+  + iReturn(value : Object) : Activation
+  + declVar(name : String, value : Object) : Void
+  + setVar(name : String, value : Object) : Void
+  + getVar(name : String) : Object
+  + getDeclActivation(name : String) : Activation
+  + hasVar(name : String) : Boolean
+  + classOf(obj : Object) : Class
+
+MethodActivation <: Activation
+  * method : Method
+  * receiver : Object
+
+BlockActivation <: Activation
+  * block : Block
+  + return(value : Object) : Activation
+
+Method
+  * formals : Array<String>
+  * code : Instruction
+
+Block <: Object
+  * formals : Array<String>
+  * code : Instruction
+  * parent : Activation
+
+Instruction
+  + eval(a: Activation) : Activation
+  // just call the equivalent method in Activation
+
+PushValue <: Instruction
+  * next : Instruction
+  * value : Object
+
+PushVar <: Instruction
+  * next : Instruction
+  * name : String
+
+PopIntoVar <: Instruction
+  * next : Instruction
+  * name : String
+
+DeclVar <: Instruction
+  * next : Instruction
+  * name : String
+
+Drop <: Instruction
+  * next : Instruction
+
+Call <: Instruction
+  * next : Instruction
+  * selector : String
+  * numArgs : Number
+
+ReturnFromBlock <: Instruction
+  * next : Instruction
+
+Cond <: Instruction
+  * nextIfTrue : Instruction
+  * nextIfFalse : Instruction
+
+-------------------------
+
+Class
+  * superClass : Class
+  * methods : Map<String, Method>
+  * instVarNames : Set<String>
+  + newInstance() : Instance<Class>
+  + lookup(selector : String) : Method
+
+PushThis <: Instruction
+  * next : Instruction
+
+PushInstVar <: Instruction
+  * next : Instruction
+  * name : String
+
+PopIntoInstVar <: Instruction
+  * next : Instruction
+  * name : String
+
+MakeNew <: Instruction
+  * next : Instruction
+
+ReturnFromMethod <: Instruction
+  * next : Instruction
