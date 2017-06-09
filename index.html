@@ -74,7 +74,7 @@ editor.on('change', function(cmInstance, changeObj) {
     parseErrorWidget = undefined;
   }
 
-  localStorage.setItem('program', editor.getValue());
+  localStorage.setItem('seymour-program', editor.getValue());
 
   const r = m.match();
   if (r.succeeded()) {
@@ -111,7 +111,7 @@ for 1 to: 10 do: {x |
   sum = sum + x;
 };
 sum.println();`;
-editor.setValue(localStorage.getItem('program') || sampleProgram);
+editor.setValue(localStorage.getItem('seymour-program') || sampleProgram);
 
     </script>
   </body>
