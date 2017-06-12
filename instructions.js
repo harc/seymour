@@ -102,14 +102,14 @@ class INew extends Instruction {
 }
 
 class ISend extends Instruction {
-  constructor(selector, numArgs, nextInstruction) {
-    super(selector, numArgs, nextInstruction);
+  constructor(selector, numArgs, activationPathToken, nextInstruction) {
+    super(selector, numArgs, activationPathToken, nextInstruction);
   }
 }
 
 class ISuperSend extends Instruction {
-  constructor(selector, numArgs, nextInstruction) {
-    super(selector, numArgs, nextInstruction);
+  constructor(selector, numArgs, activationPathToken, nextInstruction) {
+    super(selector, numArgs, activationPathToken, nextInstruction);
   }
 }
 

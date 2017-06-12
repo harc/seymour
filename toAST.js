@@ -93,51 +93,99 @@ semantics.addOperation('toAST()', {
         this.sourceLoc(),
         e.toAST(),
         [pref.toIdent(), new Ident(null, '_')].concat(selParts.toIdent()),
-        es.toAST());
+        es.toAST(),
+        pref.toActivationPathToken());
   },
 
   KWSendExp_keyword(e, selParts, es) {
-    return new Send(this.sourceLoc(), e.toAST(), selParts.toIdent(), es.toAST());
+    return new Send(
+        this.sourceLoc(),
+        e.toAST(),
+        selParts.toIdent(),
+        es.toAST(),
+        selParts.toActivationPathToken()[0]);
   },
 
   KWSendExp_super(_super, selParts, es) {
-    return new SuperSend(this.sourceLoc(), selParts.toIdent(), es.toAST());
+    return new SuperSend(
+        this.sourceLoc(),
+        selParts.toIdent(),
+        es.toAST(),
+        _super.toActivationPathToken());
   },
 
   EqExp_eq(x, op, y) {
-    return new Send(this.sourceLoc(), x.toAST(), [op.toIdent()], [y.toAST()]);
+    return new Send(
+        this.sourceLoc(), x.toAST(),
+        [op.toIdent()],
+        [y.toAST()],
+        op.toActivationPathToken());
   },
 
   RelExp_rel(x, op, y) {
-    return new Send(this.sourceLoc(), x.toAST(), [op.toIdent()], [y.toAST()]);
+    return new Send(
+        this.sourceLoc(),
+        x.toAST(),
+        [op.toIdent()],
+        [y.toAST()],
+        op.toActivationPathToken());
   },
 
   AddExp_add(x, op, y) {
-    return new Send(this.sourceLoc(), x.toAST(), [op.toIdent()], [y.toAST()]);
+    return new Send(
+        this.sourceLoc(),
+        x.toAST(),
+        [op.toIdent()],
+        [y.toAST()],
+        op.toActivationPathToken());
   },
 
   MulExp_mul(x, op, y) {
-    return new Send(this.sourceLoc(), x.toAST(), [op.toIdent()], [y.toAST()]);
+    return new Send(
+        this.sourceLoc(),
+        x.toAST(),
+        [op.toIdent()],
+        [y.toAST()],
+        op.toActivationPathToken());
   },
 
-  DotExp_call(b, _op, es, _cp) {
-    return new Send(this.sourceLoc(), b.toAST(), [new Ident(_op.sourceLoc(), 'call')], es.toAST());
+  DotExp_call(b, op, es, _cp) {
+    return new Send(
+        this.sourceLoc(),
+        b.toAST(),
+        [new Ident(null, 'call')],
+        es.toAST(),
+        op.toActivationPathToken());
   },
 
-  DotExp_send(e, _dot, m, _op, es, _cp) {
-    return new Send(this.sourceLoc(), e.toAST(), [m.toIdent()], es.toAST());
+  DotExp_send(e, dot, m, _op, es, _cp) {
+    return new Send(
+        this.sourceLoc(),
+        e.toAST(),
+        [m.toIdent()],
+        es.toAST(),
+        dot.toActivationPathToken());
   },
 
-  DotExp_superSend(_super, _dot, m, _op, es, _cp) {
-    return new SuperSend(this.sourceLoc(), [m.toIdent()], es.toAST());
+  DotExp_superSend(_super, dot, m, _op, es, _cp) {
+    return new SuperSend(
+        this.sourceLoc(),
+        [m.toIdent()],
+        es.toAST(),
+        dot.toActivationPathToken());
   },
 
   DotExp_instVarAccess(_this, _dot, x) {
     return new InstVar(this.sourceLoc(), x.toIdent());
   },
 
-  UnExp_neg(_minus, x) {
-    return new Send(this.sourceLoc(), new Lit(null, 0), [_minus.toIdent()], [x.toAST()]);
+  UnExp_neg(minus, x) {
+    return new Send(
+        this.sourceLoc(),
+        new Lit(null, 0),
+        [minus.toIdent()],
+        [x.toAST()],
+        minus.toActivationPathToken());
   },
 
   PriExp_paren(_op, e, _cp) {
@@ -158,7 +206,7 @@ semantics.addOperation('toAST()', {
   },
 
   PriExp_new(_new, C, _op, es, _cp) {
-    return new New(this.sourceLoc(), C.toAST(), es.toAST());
+    return new New(this.sourceLoc(), C.toAST(), es.toAST(), _new.toActivationPathToken());
   },
 
   PriExp_str(s) {
@@ -231,7 +279,20 @@ semantics.addOperation('toIdent()', {
 
 });
 
+semantics.addOperation('toActivationPathToken()', {
+
+  _nonterminal(children) {
+    return this._node;
+  },
+
+  _terminal() {
+    return this._node;
+  }
+
+});
+
 semantics.addOperation('sourceLoc()', {
+
   _nonterminal(children) {
     return createSourceLoc(this.source.startIdx, this.source.endIdx);
   },
@@ -255,6 +316,7 @@ semantics.addOperation('sourceLoc()', {
 });
 
 semantics.addOperation('stringValue()', {
+
   string(_oq, cs, _cq) {
     const chars = [];
     var idx = 0;
@@ -273,6 +335,7 @@ semantics.addOperation('stringValue()', {
     }
     return chars.join('');
   }
+
 });
 
 function createSourceLoc(startPos, endPos) {

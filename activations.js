@@ -186,7 +186,7 @@ class Activation {
     return this;
   }
 
-  ISend(selector, numArgs, nextInstruction) {
+  ISend(selector, numArgs, activationPathToken, nextInstruction) {
     this.assertStackContainsAtLeastThisManyElements(numArgs + 1);
 
     const args = [];
@@ -194,7 +194,7 @@ class Activation {
       args.unshift(this.stack.pop());
     }
     const receiver = this.stack.pop();
-    console.debug('send:', receiver, '.', selector, '(', ...args, ')');
+    console.debug('send:', receiver, '.', selector, '(', ...args, ')', activationPathToken);
 
     if (receiver instanceof BlockClosure && selector === 'call') {
       this.nextInstruction = nextInstruction;
@@ -207,7 +207,7 @@ class Activation {
     }
   }
 
-  ISuperSend(selector, numArgs, nextInstruction) {
+  ISuperSend(selector, numArgs, activationPathToken, nextInstruction) {
     const methodActivation = this.methodActivation;
     if (!methodActivation) {
       throw new Error('super-sends are only allowed inside a method');
@@ -217,7 +217,7 @@ class Activation {
     for (let idx = 0; idx < numArgs; idx++) {
       args.unshift(this.stack.pop());
     }
-    console.debug('super send:', this.receiver, '.', selector, '(', ...args, ')');
+    console.debug('super send:', this.receiver, '.', selector, '(', ...args, ')', activationPathToken);
     const _class = methodActivation.method.class.superClass;
     const method = _class.getMethod(selector);
     this.nextInstruction = nextInstruction;

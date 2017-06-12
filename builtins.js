@@ -68,19 +68,19 @@ TopLevelActivation.prototype.installBuiltins = function() {
         new IBlock([],
           new IPushFromVar('idx',
             new IPushFromVar('end',
-              new ISend('<=', 1,
+              new ISend('<=', 1, '<=',
                 new ILocalReturn()))),
           new IBlock([],
             new IPushFromVar('body',
               new IPushFromVar('idx',
-                new ISend('call', 1,
+                new ISend('call', 1, 'call',
                   new IPushFromVar('idx',
                     new IPush(1,
-                      new ISend('+', 1,
+                      new ISend('+', 1, '+',
                         new IPopIntoVar('idx',
                           new IPush(null,
                             new ILocalReturn())))))))),
-            new ISend('while_do:', 1,
+            new ISend('while_do:', 1, 'while_do:',
               new INonLocalReturn()))))));
 
   const _Boolean = declClass('Boolean', _Object, []);
@@ -88,11 +88,11 @@ TopLevelActivation.prototype.installBuiltins = function() {
   const True = declClass('True', _Boolean, []);
   True.declMethod('if_then:', ['tb'],
     new IPushFromVar('tb',
-      new ISend('call', 0,
+      new ISend('call', 0, 'call',
         new INonLocalReturn())));
   True.declMethod('if_then:else:', ['tb', 'fb'],
     new IPushFromVar('tb',
-      new ISend('call', 0,
+      new ISend('call', 0, 'call',
         new INonLocalReturn())));
 
   const False = declClass('False', _Boolean, []);
@@ -101,19 +101,25 @@ TopLevelActivation.prototype.installBuiltins = function() {
       new INonLocalReturn()));
   False.declMethod('if_then:else:', ['tb', 'fb'],
     new IPushFromVar('fb',
-      new ISend('call', 0,
+      new ISend('call', 0, 'call',
         new INonLocalReturn())));
 
   const Block = declClass('Block', _Object, []);
   {
-    const callBody = new ISend('call', 0, null);
-    const loop =
-      new IPushThis(
-        new ISend('call', 0,
-          new ICond(
-            new IPushFromVar('body', callBody),
-            new IPush(null, new INonLocalReturn()))));
-    callBody.operands[2] = loop;
-    Block.declMethod('while_do:', ['body'], loop);
+    let loop, callCond, callBody;
+    Block.declMethod('while_do:', ['body'],
+      new IPush(0,
+        new IDeclVar('activationPathToken',
+          loop = new IPushThis(
+            new IPrim(
+              function() { callCond.operands[2] = this.varValues.activationPathToken++; },
+              callCond = new ISend('call', 0, undefined,
+                new ICond(
+                  new IPushFromVar('body',
+                    new IPrim(
+                      function() { callBody.operands[2] = this.varValues.activationPathToken++; },
+                      callBody = new ISend('call', 0, undefined, null))),
+                  new IPush(null, new INonLocalReturn()))))))));
+    callBody.operands[3] = loop;
   }
 };

@@ -125,33 +125,35 @@ class MethodDecl extends AST {
 }
 
 class Send extends AST {
-  constructor(sourceLoc, recv, selectorParts, args) {
+  constructor(sourceLoc, recv, selectorParts, args, activationPathToken) {
     super(sourceLoc);
     this.recv = recv;
     this.selectorParts = selectorParts;
     this.args = args;
+    this.activationPathToken = activationPathToken;
   }
 
   toInstruction(next) {
     const selector = this.selectorParts.map(ident => ident.name).join('');
     return this.recv.toInstruction(
         this.args.reduceRight((rest, arg) => arg.toInstruction(rest),
-            new ISend(selector, this.args.length, next)));
+            new ISend(selector, this.args.length, this.activationPathToken, next)));
   }
 }
 
 class SuperSend extends AST {
-  constructor(sourceLoc, selectorParts, args) {
+  constructor(sourceLoc, selectorParts, args, activationPathToken) {
     super(sourceLoc);
     this.selectorParts = selectorParts;
     this.args = args;
+    this.activationPathToken = activationPathToken;
   }
 
   toInstruction(next) {
     const selector = this.selectorParts.map(ident => ident.name).join('');
     return this.args.reduceRight(
       (rest, arg) => arg.toInstruction(rest),
-      new ISuperSend(selector, this.args.length, next));
+      new ISuperSend(selector, this.args.length, this.activationPathToken, next));
   }
 }
 
@@ -206,10 +208,11 @@ class Block extends AST {
 // TODO: ArrayLit
 
 class New extends AST {
-  constructor(sourceLoc, _class, args) {
+  constructor(sourceLoc, _class, args, activationPathToken) {
     super(sourceLoc);
     this.class = _class;
     this.args = args;
+    this.activationPathToken = activationPathToken;
   }
 
   toInstruction(next) {
@@ -218,7 +221,7 @@ class New extends AST {
         new IDup(
           this.args.reduceRight(
             (rest, arg) => arg.toInstruction(rest),
-            new ISend('init', this.args.length, new IDrop(next))))));
+            new ISend('init', this.args.length, this.activationPathToken, new IDrop(next))))));
   }
 }
 
