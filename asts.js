@@ -1,18 +1,30 @@
 "use strict";
 
 class AST {
+  constructor(sourceLoc) {
+    this.sourceLoc = sourceLoc;
+  }
+
   toInstruction(next) {
     throw new Error('abstract method');
   }
+}
 
-  toStmt() {
-    return new ExpStmt(this);
+class Ident extends AST {
+  constructor(sourceLoc, name) {
+    super(sourceLoc);
+    if (name === '') debugger;
+    this.name = name;
+  }
+
+  toInstruction(next) {
+    throw new Error('not supported');
   }
 }
 
 class Seq extends AST {
-  constructor(asts) {
-    super();
+  constructor(sourceLoc, asts) {
+    super(sourceLoc);
     this.asts = asts;
   }
 
@@ -22,44 +34,44 @@ class Seq extends AST {
 }
 
 class VarDecl extends AST {
-  constructor(name, expr) {
-    super();
+  constructor(sourceLoc, name, expr) {
+    super(sourceLoc);
     this.name = name;
     this.expr = expr;
   }
 
   toInstruction(next) {
-    return this.expr.toInstruction(new IDeclVar(this.name, next));
+    return this.expr.toInstruction(new IDeclVar(this.name.name, next));
   }
 }
 
 class VarAssign extends AST {
-  constructor(name, expr) {
-    super();
+  constructor(sourceLoc, name, expr) {
+    super(sourceLoc);
     this.name = name;
     this.expr = expr;
   }
 
   toInstruction(next) {
-    return this.expr.toInstruction(new IPopIntoVar(this.name, next));
+    return this.expr.toInstruction(new IPopIntoVar(this.name.name, next));
   }
 }
 
 class InstVarAssign extends AST {
-  constructor(name, expr) {
-    super();
+  constructor(sourceLoc, name, expr) {
+    super(sourceLoc);
     this.name = name;
     this.expr = expr;
   }
 
   toInstruction(next) {
-    return this.expr.toInstruction(new IPopIntoInstVar(this.name, next));
+    return this.expr.toInstruction(new IPopIntoInstVar(this.name.name, next));
   }
 }
 
 class NonLocalReturn extends AST {
-  constructor(value) {
-    super();
+  constructor(sourceLoc, value) {
+    super(sourceLoc);
     this.value = value;
   }
 
@@ -69,8 +81,8 @@ class NonLocalReturn extends AST {
 }
 
 class ExpStmt extends AST {
-  constructor(exp) {
-    super();
+  constructor(sourceLoc, exp) {
+    super(sourceLoc);
     this.exp = exp;
   }
 
@@ -80,70 +92,72 @@ class ExpStmt extends AST {
 }
 
 class ClassDecl extends AST {
-  constructor(name, superClassName, instVarNames) {
-    super();
+  constructor(sourceLoc, name, superClassName, instVarNames) {
+    super(sourceLoc);
     this.name = name;
     this.superClassName = superClassName;
     this.instVarNames = instVarNames;
   }
 
   toInstruction(next) {
-    return new IPushFromVar(this.superClassName,
-      new IDeclClass(this.name, this.instVarNames, next));
+    return new IPushFromVar(this.superClassName.name,
+      new IDeclClass(this.name.name, this.instVarNames.map(ident => ident.name), next));
   }
 }
 
 class MethodDecl extends AST {
-  constructor(className, selector, formals, body) {
-    super();
+  constructor(sourceLoc, className, selectorParts, formals, body) {
+    super(sourceLoc);
     this.className = className;
-    this.selector = selector;
+    this.selectorParts = selectorParts;
     this.formals = formals;
     this.body = body;
   }
 
   toInstruction(next) {
-    return new IPushFromVar(this.className,
+    return new IPushFromVar(this.className.name,
       new IDeclMethod(
-        this.selector,
-        this.formals,
+        this.selectorParts.map(ident => ident.name).join(''),
+        this.formals.map(ident => ident.name),
         this.body.toInstruction(new IPushThis(new INonLocalReturn())),
         next));
   }
 }
 
 class Send extends AST {
-  constructor(recv, sel, args) {
-    super();
+  constructor(sourceLoc, recv, selectorParts, args) {
+    super(sourceLoc);
     this.recv = recv;
-    this.sel = sel;
+    this.selectorParts = selectorParts;
     this.args = args;
   }
 
   toInstruction(next) {
+    const selector = this.selectorParts.map(ident => ident.name).join('');
     return this.recv.toInstruction(
         this.args.reduceRight((rest, arg) => arg.toInstruction(rest),
-            new ISend(this.sel, this.args.length, next)));
+            new ISend(selector, this.args.length, next)));
   }
 }
 
 class SuperSend extends AST {
-  constructor(sel, args) {
-    super();
-    this.sel = sel;
+  constructor(sourceLoc, selectorParts, args) {
+    super(sourceLoc);
+    this.selectorParts = selectorParts;
     this.args = args;
   }
 
   toInstruction(next) {
+    const selector = this.selectorParts.map(ident => ident.name).join('');
     return this.args.reduceRight(
       (rest, arg) => arg.toInstruction(rest),
-      new ISuperSend(this.sel, this.args.length, next));
+      new ISuperSend(selector, this.args.length, next));
   }
 }
 
 class Var extends AST {
-  constructor(name) {
-    super();
+  constructor(sourceLoc, name) {
+    super(sourceLoc);
     this.name = name;
   }
 
@@ -153,19 +167,19 @@ class Var extends AST {
 }
 
 class InstVar extends AST {
-  constructor(name) {
-    super();
+  constructor(sourceLoc, name) {
+    super(sourceLoc);
     this.name = name;
   }
 
   toInstruction(next) {
-    return new IPushFromInstVar(this.name, next);
+    return new IPushFromInstVar(this.name.name, next);
   }
 }
 
 class LocalReturn extends AST {
-  constructor(value) {
-    super();
+  constructor(sourceLoc, value) {
+    super(sourceLoc);
     this.value = value;
   }
 
@@ -175,22 +189,25 @@ class LocalReturn extends AST {
 }
 
 class Block extends AST {
-  constructor(formals, bodyExpr) {
-    super();
+  constructor(sourceLoc, formals, bodyExpr) {
+    super(sourceLoc);
     this.formals = formals;
     this.bodyExpr = bodyExpr;
   }
 
   toInstruction(next) {
-    return new IBlock(this.formals, this.bodyExpr.toInstruction(new ILocalReturn()), next);
+    return new IBlock(
+        this.formals.map(ident => ident.name),
+        this.bodyExpr.toInstruction(new ILocalReturn()),
+        next);
   }
 }
 
 // TODO: ArrayLit
 
 class New extends AST {
-  constructor(_class, args) {
-    super();
+  constructor(sourceLoc, _class, args) {
+    super(sourceLoc);
     this.class = _class;
     this.args = args;
   }
@@ -206,8 +223,8 @@ class New extends AST {
 }
 
 class Lit extends AST {
-  constructor(value) {
-    super();
+  constructor(sourceLoc, value) {
+    super(sourceLoc);
     this.value = value;
   }
 
@@ -217,8 +234,8 @@ class Lit extends AST {
 }
 
 class This extends AST {
-  constructor() {
-    super();
+  constructor(sourceLoc) {
+    super(sourceLoc);
   }
 
   toInstruction(next) {

@@ -62,7 +62,7 @@ TopLevelActivation.prototype.installBuiltins = function() {
     new IPrim(
       function() { this.stack.push(this.receiver / this.getVar('that')); },
       new INonLocalReturn()));
-  _Number.declMethod('for_to_do', ['end', 'body'],
+  _Number.declMethod('for_to:do:', ['end', 'body'],
     new IPushThis(
       new IDeclVar('idx',
         new IBlock([],
@@ -80,26 +80,26 @@ TopLevelActivation.prototype.installBuiltins = function() {
                         new IPopIntoVar('idx',
                           new IPush(null,
                             new ILocalReturn())))))))),
-            new ISend('while_do', 1,
+            new ISend('while_do:', 1,
               new INonLocalReturn()))))));
 
   const _Boolean = declClass('Boolean', _Object, []);
 
   const True = declClass('True', _Boolean, []);
-  True.declMethod('if_then', ['tb'],
+  True.declMethod('if_then:', ['tb'],
     new IPushFromVar('tb',
       new ISend('call', 0,
         new INonLocalReturn())));
-  True.declMethod('if_then_else', ['tb', 'fb'],
+  True.declMethod('if_then:else:', ['tb', 'fb'],
     new IPushFromVar('tb',
       new ISend('call', 0,
         new INonLocalReturn())));
 
   const False = declClass('False', _Boolean, []);
-  False.declMethod('if_then', ['tb'],
+  False.declMethod('if_then:', ['tb'],
     new IPush(null,
       new INonLocalReturn()));
-  False.declMethod('if_then_else', ['tb', 'fb'],
+  False.declMethod('if_then:else:', ['tb', 'fb'],
     new IPushFromVar('fb',
       new ISend('call', 0,
         new INonLocalReturn())));
@@ -114,6 +114,6 @@ TopLevelActivation.prototype.installBuiltins = function() {
             new IPushFromVar('body', callBody),
             new IPush(null, new INonLocalReturn()))));
     callBody.operands[2] = loop;
-    Block.declMethod('while_do', ['body'], loop);
+    Block.declMethod('while_do:', ['body'], loop);
   }
 };

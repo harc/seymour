@@ -16,6 +16,7 @@
     <script src="Interpreter.js"></script>
     <script src="Method.js"></script>
     <script src="Obj.js"></script>
+    <script src="SourceLoc.js"></script>
 
     <!-- syntax stuff -->
     <script src="grammar.js"></script>
@@ -75,7 +76,6 @@ editor.on('change', function(cmInstance, changeObj) {
   }
 
   localStorage.setItem('seymour-program', editor.getValue());
-
   const r = m.match();
   if (r.succeeded()) {
     // console.clear();
