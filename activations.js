@@ -113,14 +113,14 @@ class Activation {
     return this;
   }
 
-  IPopIntoVar(name, nextInstruction) {
+  IPopIntoVar(name, sourceLoc, nextInstruction) {
     this.assertStackContainsAtLeastThisManyElements(1);
     this.setVar(name, this.stack.pop());
     this.nextInstruction = nextInstruction;
     return this;
   }
 
-  IPopIntoInstVar(name, nextInstruction) {
+  IPopIntoInstVar(name, sourceLoc, nextInstruction) {
     this.assertStackContainsAtLeastThisManyElements(1);
     const value = this.stack.pop();
     this.receiver.setInstVar(name, value);
@@ -128,7 +128,7 @@ class Activation {
     return this;
   }
 
-  IDeclVar(name, nextInstruction) {
+  IDeclVar(name, sourceLoc, nextInstruction) {
     this.assertStackContainsAtLeastThisManyElements(1);
     this.declVar(name, this.stack.pop());
     this.nextInstruction = nextInstruction;
@@ -186,7 +186,7 @@ class Activation {
     return this;
   }
 
-  ISend(selector, numArgs, activationPathToken, nextInstruction) {
+  ISend(selector, numArgs, sourceLoc, activationPathToken, nextInstruction) {
     this.assertStackContainsAtLeastThisManyElements(numArgs + 1);
 
     const args = [];
@@ -194,7 +194,7 @@ class Activation {
       args.unshift(this.stack.pop());
     }
     const receiver = this.stack.pop();
-    console.debug('send:', receiver, '.', selector, '(', ...args, ')', activationPathToken);
+    console.debug('send:', receiver, '.', selector, '(', ...args, ')', sourceLoc, activationPathToken);
 
     if (receiver instanceof BlockClosure && selector === 'call') {
       this.nextInstruction = nextInstruction;
@@ -207,7 +207,7 @@ class Activation {
     }
   }
 
-  ISuperSend(selector, numArgs, activationPathToken, nextInstruction) {
+  ISuperSend(selector, numArgs, sourceLoc, activationPathToken, nextInstruction) {
     const methodActivation = this.methodActivation;
     if (!methodActivation) {
       throw new Error('super-sends are only allowed inside a method');
@@ -217,21 +217,21 @@ class Activation {
     for (let idx = 0; idx < numArgs; idx++) {
       args.unshift(this.stack.pop());
     }
-    console.debug('super send:', this.receiver, '.', selector, '(', ...args, ')', activationPathToken);
+    console.debug('super send:', this.receiver, '.', selector, '(', ...args, ')', sourceLoc, activationPathToken);
     const _class = methodActivation.method.class.superClass;
     const method = _class.getMethod(selector);
     this.nextInstruction = nextInstruction;
     return new MethodActivation(method, this.receiver, args, this.topLevelActivation, this);
   }
 
-  ILocalReturn() {
+  ILocalReturn(sourceLoc) {
     throw new Error('can only return from a block activation');
   }
 
-  INonLocalReturn() {
+  INonLocalReturn(sourceLoc) {
     this.assertStackContainsAtLeastThisManyElements(1);
     const value = this.stack.pop();
-    console.debug('(non-local) returning', value);
+    console.debug('(non-local) returning', value, sourceLoc);
     const methodActivation = this.methodActivation;
     let activation = this;
     while (activation !== null) {
@@ -298,7 +298,7 @@ class TopLevelActivation extends Activation {
     return this;
   }
 
-  INonLocalReturn() {
+  INonLocalReturn(sourceLoc) {
     throw new Error('cannot return from top-level activation');
   }
 
@@ -350,10 +350,10 @@ class BlockActivation extends Activation {
     return this.parent.methodActivation;
   }
 
-  ILocalReturn() {
+  ILocalReturn(sourceLoc) {
     this.assertStackContainsAtLeastThisManyElements(1);
     const value = this.stack.pop();
-    console.debug('returning', value);
+    console.debug('returning', value, sourceLoc);
     this.caller.stack.push(value);
     this.nextInstruction = null;
     return this.caller;

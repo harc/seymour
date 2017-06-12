@@ -42,20 +42,20 @@ class IPushFromInstVar extends Instruction {
 }
 
 class IPopIntoVar extends Instruction {
-  constructor(name, nextInstruction) {
-    super(name, nextInstruction);
+  constructor(name, sourceLoc, nextInstruction) {
+    super(name, sourceLoc, nextInstruction);
   }
 }
 
 class IPopIntoInstVar extends Instruction {
-  constructor(name, nextInstruction) {
-    super(name, nextInstruction);
+  constructor(name, sourceLoc, nextInstruction) {
+    super(name, sourceLoc, nextInstruction);
   }
 }
 
 class IDeclVar extends Instruction {
-  constructor(name, nextInstruction) {
-    super(name, nextInstruction);
+  constructor(name, sourceLoc, nextInstruction) {
+    super(name, sourceLoc, nextInstruction);
   }
 }
 
@@ -102,26 +102,26 @@ class INew extends Instruction {
 }
 
 class ISend extends Instruction {
-  constructor(selector, numArgs, activationPathToken, nextInstruction) {
-    super(selector, numArgs, activationPathToken, nextInstruction);
+  constructor(selector, numArgs, sourceLoc, activationPathToken, nextInstruction) {
+    super(selector, numArgs, sourceLoc, activationPathToken, nextInstruction);
   }
 }
 
 class ISuperSend extends Instruction {
-  constructor(selector, numArgs, activationPathToken, nextInstruction) {
-    super(selector, numArgs, activationPathToken, nextInstruction);
+  constructor(selector, numArgs, sourceLoc, activationPathToken, nextInstruction) {
+    super(selector, numArgs, sourceLoc, activationPathToken, nextInstruction);
   }
 }
 
 class INonLocalReturn extends Instruction {
-  constructor() {
-    super();
+  constructor(sourceLoc) {
+    super(sourceLoc);
   }
 }
 
 class ILocalReturn extends Instruction {
-  constructor() {
-    super();
+  constructor(sourceLoc) {
+    super(sourceLoc);
   }
 }
 

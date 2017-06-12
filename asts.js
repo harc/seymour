@@ -13,7 +13,6 @@ class AST {
 class Ident extends AST {
   constructor(sourceLoc, name) {
     super(sourceLoc);
-    if (name === '') debugger;
     this.name = name;
   }
 
@@ -41,7 +40,7 @@ class VarDecl extends AST {
   }
 
   toInstruction(next) {
-    return this.expr.toInstruction(new IDeclVar(this.name.name, next));
+    return this.expr.toInstruction(new IDeclVar(this.name.name, this.sourceLoc, next));
   }
 }
 
@@ -53,7 +52,7 @@ class VarAssign extends AST {
   }
 
   toInstruction(next) {
-    return this.expr.toInstruction(new IPopIntoVar(this.name.name, next));
+    return this.expr.toInstruction(new IPopIntoVar(this.name.name, this.sourceLoc, next));
   }
 }
 
@@ -65,7 +64,7 @@ class InstVarAssign extends AST {
   }
 
   toInstruction(next) {
-    return this.expr.toInstruction(new IPopIntoInstVar(this.name.name, next));
+    return this.expr.toInstruction(new IPopIntoInstVar(this.name.name, this.sourceLoc, next));
   }
 }
 
@@ -76,7 +75,7 @@ class NonLocalReturn extends AST {
   }
 
   toInstruction(next) {
-    return this.value.toInstruction(new INonLocalReturn(next));
+    return this.value.toInstruction(new INonLocalReturn(this.sourceLoc, next));
   }
 }
 
@@ -119,7 +118,7 @@ class MethodDecl extends AST {
       new IDeclMethod(
         this.selectorParts.map(ident => ident.name).join(''),
         this.formals.map(ident => ident.name),
-        this.body.toInstruction(new IPushThis(new INonLocalReturn())),
+        this.body.toInstruction(new IPushThis(new INonLocalReturn(null))),
         next));
   }
 }
@@ -137,7 +136,7 @@ class Send extends AST {
     const selector = this.selectorParts.map(ident => ident.name).join('');
     return this.recv.toInstruction(
         this.args.reduceRight((rest, arg) => arg.toInstruction(rest),
-            new ISend(selector, this.args.length, this.activationPathToken, next)));
+            new ISend(selector, this.args.length, this.sourceLoc, this.activationPathToken, next)));
   }
 }
 
@@ -153,7 +152,7 @@ class SuperSend extends AST {
     const selector = this.selectorParts.map(ident => ident.name).join('');
     return this.args.reduceRight(
       (rest, arg) => arg.toInstruction(rest),
-      new ISuperSend(selector, this.args.length, this.activationPathToken, next));
+      new ISuperSend(selector, this.args.length, this.sourceLoc, this.activationPathToken, next));
   }
 }
 
@@ -186,7 +185,7 @@ class LocalReturn extends AST {
   }
 
   toInstruction(next) {
-    return this.value.toInstruction(new ILocalReturn(next));
+    return this.value.toInstruction(new ILocalReturn(this.sourceLoc, next));
   }
 }
 
@@ -200,7 +199,7 @@ class Block extends AST {
   toInstruction(next) {
     return new IBlock(
         this.formals.map(ident => ident.name),
-        this.bodyExpr.toInstruction(new ILocalReturn()),
+        this.bodyExpr.toInstruction(new ILocalReturn(null)),
         next);
   }
 }
@@ -221,7 +220,12 @@ class New extends AST {
         new IDup(
           this.args.reduceRight(
             (rest, arg) => arg.toInstruction(rest),
-            new ISend('init', this.args.length, this.activationPathToken, new IDrop(next))))));
+            new ISend(
+              'init',
+              this.args.length,
+              this.sourceLoc,
+              this.activationPathToken,
+              new IDrop(next))))));
   }
 }
 
