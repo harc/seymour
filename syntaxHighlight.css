@@ -1,0 +1,37 @@
+.sh_keyword {
+  color: #5F136F;
+  font-weight: bold;
+}
+
+.sh_number,
+.sh_string,
+.sh_true,
+.sh_false,
+.sh_null {
+  color: #2F19AB;
+}
+
+.sh_varName,
+.sh_className {
+  color: #333;
+}
+
+.sh_className {
+  font-weight: bold;
+}
+
+.sh_binSelector {
+  color: #0B1010;
+}
+
+.sh_selector {
+  color: #2F1988;
+}
+
+.sh_instVarName {
+  color: maroon;
+}
+
+.sh_comment {
+  color: #638b61;
+}

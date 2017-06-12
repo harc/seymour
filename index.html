@@ -21,6 +21,8 @@
     <!-- syntax stuff -->
     <script src="grammar.js"></script>
     <script src="parse.js"></script>
+    <script src="syntaxHighlight.js"></script>
+    <link rel="stylesheet" href="syntaxHighlight.css">
 
     <!-- other stuff -->
     <link rel="stylesheet" href="style.css">
@@ -76,6 +78,9 @@ editor.on('change', function(cmInstance, changeObj) {
   }
 
   localStorage.setItem('seymour-program', editor.getValue());
+
+  syntaxHighlight(editor, m);
+
   const r = m.match();
   if (r.succeeded()) {
     // console.clear();
