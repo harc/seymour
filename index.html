@@ -20,7 +20,7 @@
 
     <!-- syntax stuff -->
     <script src="grammar.js"></script>
-    <script src="toAST.js"></script>
+    <script src="parse.js"></script>
 
     <!-- other stuff -->
     <link rel="stylesheet" href="style.css">
@@ -79,7 +79,7 @@ editor.on('change', function(cmInstance, changeObj) {
   const r = m.match();
   if (r.succeeded()) {
     // console.clear();
-    const ast = toAST(r);
+    const ast = parse(r);
     console.debug('ast', ast);
     const code = ast.toInstruction(new IDone());
     console.debug('code', code);
