@@ -8,13 +8,20 @@ class Interpreter {
 
   step() {
     this.currentActivation = this.currentActivation.step();
-    return this.currentActivation !== null;
+    return this.currentActivation === null;
   }
 
   runForMillis(timeLimit) {
     const t0 = performance.now();
     while (true) {
-      if (!this.step()) {
+      let done;
+      try {
+        done = this.step();
+      } catch(e) {
+        console.log(e);
+        return true;
+      }
+      if (done) {
         return true;
       }
       if (performance.now() - t0 >= timeLimit) {
