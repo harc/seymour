@@ -3,7 +3,13 @@
 const preludeAST = (function() {
 
   const source = `
+
     def Object.init() {}
+    def Object.getClass() {
+      var ans = null;
+      @{ this.varValues.ans = this.classOf(this.receiver); }@
+      return ans;
+    }
     def Object == that {
       var ans = null;
       @{ this.varValues.ans = this.receiver === this.varValues.that; }@
@@ -12,6 +18,16 @@ const preludeAST = (function() {
     def Object != that {
       var ans = null;
       @{ this.varValues.ans = this.receiver !== this.varValues.that; }@
+      return ans;
+    }
+    def Object.toIdString() {
+      var ans = null;
+      @{
+        const thisObj = this.receiver;
+        this.varValues.ans = thisObj instanceof Obj ?
+            '#' + thisObj.id :
+            '' + thisObj;
+      }@
       return ans;
     }
     def Object.toString() {
@@ -25,8 +41,15 @@ const preludeAST = (function() {
     }
 
     class Class;
+    def Class.getName() {
+      var ans = null;
+      @{ this.varValues.ans = this.receiver.name; }@
+      return ans;
+    }
+    def Class.toString() = "class " + this.getName();
 
     class Null;
+    def Null.toString() = "null";
 
     class Comparable;
     def Comparable < that {
@@ -103,6 +126,7 @@ const preludeAST = (function() {
       };
       return null;
     }
+
   `;
 
   try {
