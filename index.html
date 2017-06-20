@@ -50,6 +50,7 @@ function run(optCode) {
     if (timeoutId !== null) {
       clearTimeout(timeoutId);
     }
+    Obj.nextId = 0;
     interpreter = new Interpreter(optCode);
   }
 
