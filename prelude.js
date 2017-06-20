@@ -20,6 +20,11 @@ const preludeAST = (function() {
       @{ this.varValues.ans = this.receiver !== this.varValues.that; }@
       return ans;
     }
+    def Object.println() {
+      @{ console.log('>>', this.receiver); }@
+      return null;
+    }
+    def Object.printsln() = this.toString().println();
     def Object.toIdString() {
       var ans = null;
       @{
@@ -30,15 +35,8 @@ const preludeAST = (function() {
       }@
       return ans;
     }
-    def Object.toString() {
-      var ans = null;
-      @{ this.varValues.ans = '' + this.receiver; }@
-      return ans;
-    }
-    def Object.println() {
-      @{ console.log('>>', this.receiver); }@
-      return null;
-    }
+    def Object.toString() = this.toIdString();
+    def Object.toDebugString() = this.toIdString();
 
     class Class;
     def Class.getName() {
@@ -74,9 +72,20 @@ const preludeAST = (function() {
     }
 
     class String extends Comparable;
+    def String.getSize() {
+      var ans = null;
+      @{ this.varValues.ans = this.receiver.length; }@
+      return ans;
+    }
     def String + that {
       var ans = that.toString();
       @{ this.varValues.ans = this.receiver + this.varValues.ans; }@
+      return ans;
+    }
+    def String.toString() = this;
+    def String.toIdString() {
+      var ans = null;
+      @{ this.varValues.ans = JSON.stringify(this.receiver); }@
       return ans;
     }
 
@@ -110,10 +119,12 @@ const preludeAST = (function() {
     class Boolean;
     
     class True extends Boolean;
+    def True.not() = false;
     def if True then: tb = tb.call();
     def if True then: tb else: fb = tb.call();
     
     class False extends Boolean;
+    def False.not() = true;
     def if False then: tb = null;
     def if False then: tb else: fb = fb.call();
     
