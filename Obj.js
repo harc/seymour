@@ -5,7 +5,9 @@ class Obj {
     this.id = Obj.nextId++;
     this.class = _class;
     this.instVars = Object.create(null);
-    this.class.instVarNames.forEach(name => this.instVars[name] = null);
+    if (this.class) {
+      this.class.instVarNames.forEach(name => this.instVars[name] = null);
+    }
   }
 
   lookup(selector) {

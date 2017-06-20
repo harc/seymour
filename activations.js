@@ -53,7 +53,11 @@ class Activation {
   }
 
   classOf(value) {
-    if (value instanceof Obj) {
+    if (value instanceof BlockClosure) {
+      return this.topLevelActivation.varValues.Block;
+    } else if (value instanceof Class) {
+      return this.topLevelActivation.varValues.Class;
+    } else if (value instanceof Obj) {
       return value.class;
     } else if (typeof value === 'number') {
       return this.topLevelActivation.varValues.Number;
@@ -65,10 +69,6 @@ class Activation {
       return this.topLevelActivation.varValues.True;
     } else if (value === false) {
       return this.topLevelActivation.varValues.False;
-    } else if (value instanceof BlockClosure) {
-      return this.topLevelActivation.varValues.Block;
-    } else if (value instanceof Class) {
-      return this.topLevelActivation.varValues.Class;
     } else {
       console.error(value);
       throw new Error('not sure what is the class of this object');

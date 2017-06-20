@@ -1,7 +1,8 @@
 "use strict";
 
-class Class {
+class Class extends Obj {
   constructor(name, superClass = null, instVarNames = new Set()) {
+    super(null);
     this.name = name;
     this.superClass = superClass;
     if (superClass === null) {
