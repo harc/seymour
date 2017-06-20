@@ -7,17 +7,17 @@ const preludeAST = (function() {
     def Object.init() {}
     def Object.getClass() {
       var ans = null;
-      @{ this.varValues.ans = this.classOf(this.receiver); }@
+      @{ this.setVar('ans', this.classOf(this.receiver)); }@
       return ans;
     }
     def Object == that {
       var ans = null;
-      @{ this.varValues.ans = this.receiver === this.varValues.that; }@
+      @{ this.setVar('ans', this.receiver === this.getVar('that')); }@
       return ans;
     }
     def Object != that {
       var ans = null;
-      @{ this.varValues.ans = this.receiver !== this.varValues.that; }@
+      @{ this.setVar('ans', this.receiver !== this.getVar('that')); }@
       return ans;
     }
     def Object.println() {
@@ -29,9 +29,7 @@ const preludeAST = (function() {
       var ans = null;
       @{
         const thisObj = this.receiver;
-        this.varValues.ans = thisObj instanceof Obj ?
-            '#' + thisObj.id :
-            '' + thisObj;
+        this.setVar('ans', thisObj instanceof Obj ? '#' + thisObj.id : '' + thisObj);
       }@
       return ans;
     }
@@ -41,7 +39,7 @@ const preludeAST = (function() {
     class Class;
     def Class.getName() {
       var ans = null;
-      @{ this.varValues.ans = this.receiver.name; }@
+      @{ this.setVar('ans', this.receiver.name); }@
       return ans;
     }
     def Class.toString() = "class " + this.getName();
@@ -52,67 +50,77 @@ const preludeAST = (function() {
     class Comparable;
     def Comparable < that {
       var ans = null;
-      @{ this.varValues.ans = this.receiver < this.varValues.that; }@
+      @{ this.setVar('ans', this.receiver < this.getVar('that')); }@
       return ans;
     }
     def Comparable <= that {
       var ans = null;
-      @{ this.varValues.ans = this.receiver <= this.varValues.that; }@
+      @{ this.setVar('ans', this.receiver <= this.getVar('that')); }@
       return ans;
     }
     def Comparable > that {
       var ans = null;
-      @{ this.varValues.ans = this.receiver > this.varValues.that; }@
+      @{ this.setVar('ans', this.receiver > this.getVar('that')); }@
       return ans;
     }
     def Comparable >= that {
       var ans = null;
-      @{ this.varValues.ans = this.receiver >= this.varValues.that; }@
+      @{ this.setVar('ans', this.receiver >= this.getVar('that')); }@
       return ans;
     }
 
     class String extends Comparable;
     def String.getSize() {
       var ans = null;
-      @{ this.varValues.ans = this.receiver.length; }@
+      @{ this.setVar('ans', this.receiver.length); }@
       return ans;
+    }
+    def String.get(idx) {
+      if (1 <= idx and: {idx <= this.getSize()}) then: {
+        var ans = null;
+        @{ this.setVar('ans', this.receiver[this.getVar('idx') - 1]); }@
+        return ans;
+      } else: {
+        // TODO: throw an exception
+        return null;
+      };
     }
     def String + that {
       var ans = that.toString();
-      @{ this.varValues.ans = this.receiver + this.varValues.ans; }@
+      @{ this.setVar('ans', this.receiver + this.getVar('ans')); }@
       return ans;
     }
     def String.toString() = this;
     def String.toIdString() {
       var ans = null;
-      @{ this.varValues.ans = JSON.stringify(this.receiver); }@
+      @{ this.setVar('ans', JSON.stringify(this.receiver)); }@
       return ans;
     }
 
     class Number extends Comparable;
     def Number + that {
       var ans = null;
-      @{ this.varValues.ans = this.receiver + this.varValues.that; }@
+      @{ this.setVar('ans', this.receiver + this.getVar('that')); }@
       return ans;
     }
     def Number - that {
       var ans = null;
-      @{ this.varValues.ans = this.receiver - this.varValues.that; }@
+      @{ this.setVar('ans', this.receiver - this.getVar('that')); }@
       return ans;
     }
     def Number * that {
       var ans = null;
-      @{ this.varValues.ans = this.receiver * this.varValues.that; }@
+      @{ this.setVar('ans', this.receiver * this.getVar('that')); }@
       return ans;
     }
     def Number / that {
       var ans = null;
-      @{ this.varValues.ans = this.receiver / this.varValues.that; }@
+      @{ this.setVar('ans', this.receiver / this.getVar('that')); }@
       return ans;
     }
     def Number % that {
       var ans = null;
-      @{ this.varValues.ans = this.receiver % this.varValues.that; }@
+      @{ this.setVar('ans', this.receiver % this.getVar('that')); }@
       return ans;
     }
 
@@ -120,13 +128,17 @@ const preludeAST = (function() {
     
     class True extends Boolean;
     def True.not() = false;
-    def if True then: tb = tb.call();
-    def if True then: tb else: fb = tb.call();
+    def True and: block = block();
+    def True or: block = true;
+    def if True then: tb = tb();
+    def if True then: tb else: fb = tb();
     
     class False extends Boolean;
     def False.not() = true;
+    def False and: block = false;
+    def False or: block = block();
     def if False then: tb = null;
-    def if False then: tb else: fb = fb.call();
+    def if False then: tb else: fb = fb();
     
     def for Number to: end do: body = for this to: end by: 1 do: body;
     def for Number to: end by: step do: body {

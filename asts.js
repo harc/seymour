@@ -14,7 +14,12 @@ class JSPrim extends AST {
   constructor(sourceLoc, code) {
     super(sourceLoc);
     this.code = code;
-    this.primFn = eval('(function() {' + code + '})');
+    try {
+      this.primFn = eval('(function() {' + code + '})');
+    } catch (e) {
+      console.error('bad JS prim code', code);
+      throw e;
+    }
   }
 
   toInstruction(next) {
