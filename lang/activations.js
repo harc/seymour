@@ -3,11 +3,7 @@
 class Activation {
   constructor(args, formals, parent, caller, code) {
     this.args = args;
-    if (parent === null) {
-      this.varDeclActivations = Object.create(null);
-    } else {
-      this.varDeclActivations = Object.create(parent.varDeclActivations);
-    }
+    this.varDeclActivations = Object.create(parent === null ? null : parent.varDeclActivations);
     this.varValues = Object.create(null);
     if (args.length < formals.length) {
       throw new Error('not enough arguments');
