@@ -1,5 +1,7 @@
 TODO
 ====
 
-* Exceptions
 * Arrays
+* Exceptions
+  - try Block on: exceptionClass do: handler
+* Time machine

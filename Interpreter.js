@@ -18,7 +18,11 @@ class Interpreter {
       try {
         done = this.step();
       } catch(e) {
-        console.log(e);
+        if (e instanceof Eggception) {
+          console.error('uncaught exception', e.value);
+        } else {
+          console.error('system error', e);
+        }
         return true;
       }
       if (done) {

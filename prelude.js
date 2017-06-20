@@ -36,6 +36,11 @@ const preludeAST = (function() {
     def Object.toString() = this.toIdString();
     def Object.toDebugString() = this.toIdString();
 
+    def Block.call() {
+      // The implementation of this method is in Activation.ISend -- see activations.js
+      @{ throw new Error('Block\\'s call method should never be called directly'); }@
+    }
+
     class Class;
     def Class.getName() {
       var ans = null;
@@ -148,6 +153,31 @@ const preludeAST = (function() {
         idx = idx + 1;
       };
       return null;
+    }
+
+    // Exceptions
+
+    def Object.throw() {
+      @{ throw new Eggception(this.receiver); }@
+    }
+
+    class Exception;
+    def Exception.toString() {
+      return "[" + this.getClass().getName() + " exception]";
+    }
+
+    class IndexOutOfBounds extends Exception with collection, index;
+    def IndexOutOfBounds.init(collection, index) {
+      this.collection = collection;
+      this.index = index;
+    }
+
+    class InvalidArgument extends Exception with receiver, methodName, argName, argValue;
+    def InvalidArgument.init(receiver, methodName, argName, argValue) {
+      this.receiver = receiver;
+      this.methodName = methodName;
+      this.argName = argName;
+      this.argValue = argValue;
     }
 
   `;
