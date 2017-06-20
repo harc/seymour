@@ -86,7 +86,7 @@ const preludeAST = (function() {
         @{ this.setVar('ans', this.receiver[this.getVar('idx') - 1]); }@
         return ans;
       } else: {
-        new InvalidArgument(this, "get", "idx", idx).throw();
+        new IndexOutOfBounds(this, idx).throw();
       };
     }
     def String + that {
@@ -164,7 +164,7 @@ const preludeAST = (function() {
     def Array.size() = this.size;
     def Array.get(idx) {
       if (idx.getClass() != Number or: {idx < 1 or: {idx > this.size}}) then: {
-        new InvalidArgument(this, "get", "idx", idx).throw();
+        new IndexOutOfBounds(this, idx).throw();
       };
       var ans = null;
       @{
@@ -175,7 +175,7 @@ const preludeAST = (function() {
     }
     def Array.set(idx, value) {
       if (idx.getClass() != Number or: {idx < 1 or: {idx > this.size}}) then: {
-        new InvalidArgument(this, "set", "idx", idx).throw();
+        new IndexOutOfBounds(this, idx).throw();
       };
       @{ this.receiver.instVars[this.getVar('idx')] = this.getVar('value'); }@
     }
