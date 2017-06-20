@@ -86,8 +86,7 @@ const preludeAST = (function() {
         @{ this.setVar('ans', this.receiver[this.getVar('idx') - 1]); }@
         return ans;
       } else: {
-        // TODO: throw an exception
-        return null;
+        new InvalidArgument(this, "get", "idx", idx).throw();
       };
     }
     def String + that {
