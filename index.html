@@ -24,6 +24,9 @@
     <script src="syntaxHighlight.js"></script>
     <link rel="stylesheet" href="syntaxHighlight.css">
 
+    <!-- prelude -->
+    <script src="prelude.js"></script>
+
     <!-- other stuff -->
     <link rel="stylesheet" href="style.css">
     <textarea id="myTextArea"></textarea>
@@ -86,7 +89,7 @@ editor.on('change', function(cmInstance, changeObj) {
     // console.clear();
     const ast = parse(r);
     console.debug('ast', ast);
-    const code = ast.toInstruction(new IDone());
+    const code = preludeAST.toInstruction(ast.toInstruction(new IDone()));
     console.debug('code', code);
     run(code);
   } else {

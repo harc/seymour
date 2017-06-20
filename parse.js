@@ -1,3 +1,5 @@
+"use strict";
+
 const parse = (function() {
 
   const semantics = seymourGrammar.createSemantics();
@@ -321,7 +323,7 @@ const parse = (function() {
 
     string(_oq, cs, _cq) {
       const chars = [];
-      var idx = 0;
+      let idx = 0;
       cs = cs.sourceString;
       while (idx < cs.length) {
         let c = cs[idx++];
@@ -340,11 +342,16 @@ const parse = (function() {
 
   });
 
+  let includeSourceLocs;
+
   function createSourceLoc(startPos, endPos) {
-    return new SourceLoc(startPos, endPos, lineNumbers[startPos], lineNumbers[endPos]);
+    return includeSourceLocs ?
+        new SourceLoc(startPos, endPos, lineNumbers[startPos], lineNumbers[endPos]) :
+        null;
   }
 
-  function parse(matchResult) {
+  function parse(matchResult, optIncludeSourceLocs) {
+    includeSourceLocs = arguments.length === 1 ? true : !!optIncludeSourceLocs;
     if (matchResult.succeeded()) {
       return semantics(matchResult).toAST();
     } else {
