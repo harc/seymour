@@ -226,7 +226,15 @@ const preludeAST = (function() {
     // Exceptions
 
     def Object.throw() {
-      @{ throw new Eggception(this.receiver); }@
+      @{ this.throw(this.receiver); }@
+    }
+
+    def try Block on: exceptionClass do: catchBlock {
+      "TODO".throw();
+    }
+
+    def try Block catch: catchBlock {
+      return try this on: Object do: catchBlock;
     }
 
     class Exception;

@@ -259,6 +259,14 @@ class Activation {
     throw new Error('cannot return from a method activation that is no longer on the stack');
   }
 
+  throw(e) {
+    // * unwind stack until try _ on: E do: C
+    //   w/ classOf(E) <: E is found
+    // * call C(e)
+    // * but what's the sourceLoc of the call? etc.
+    debugger;
+  }
+
   IDone() {
     throw new Error('`done` instruction is only valid in top-level activation');
   }
