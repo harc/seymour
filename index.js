@@ -15,14 +15,14 @@ let interpreter;
 let R;
 let timeoutId;
 
-function run(sourceLoc, code) {
+function run(ast, code) {
   if (arguments.length === 2) {
     if (timeoutId !== null) {
       clearTimeout(timeoutId);
     }
     Obj.nextId = 0;
     R = new EventRecorder();
-    interpreter = new Interpreter(sourceLoc, code, R);
+    interpreter = new Interpreter(ast.sourceLoc, code, R);
     microViz.setEnv(interpreter.global.env);
   }
 
@@ -62,7 +62,7 @@ editor.on('changes', function(cmInstance, changes) {
     console.debug('ast', ast);
     const code = preludeAST.toInstruction(ast.toInstruction(new IDone()));
     console.debug('code', code);
-    run(ast.sourceLoc, code);
+    run(ast, code);
   } else {
     const expected = r.getExpectedText();
     const pos = editor.doc.posFromIndex(r.getRightmostFailurePosition());

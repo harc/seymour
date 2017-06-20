@@ -5,12 +5,13 @@ const parse = (function() {
   const semantics = seymourGrammar.createSemantics();
 
   let programSource;
-  let lineNumbers = [];
+  let lineNumbers;
 
   semantics.addOperation('toAST()', {
 
     Program(declsAndStmts) {
       programSource = this.sourceString;
+      lineNumbers = [];
       let currLineNumber = 1;
       for (let pos = 0; pos < programSource.length; pos++) {
         lineNumbers[pos] = currLineNumber;
@@ -18,6 +19,7 @@ const parse = (function() {
           currLineNumber++;
         }
       }
+      lineNumbers[programSource.length] = currLineNumber;
       return new Seq(this.sourceLoc(), declsAndStmts.toAST());
     },
 
