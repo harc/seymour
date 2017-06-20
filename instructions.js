@@ -101,6 +101,12 @@ class INew extends Instruction {
   }
 }
 
+class IArray extends Instruction {
+  constructor(size, nextInstruction) {
+    super(size, nextInstruction);
+  }
+}
+
 class ISend extends Instruction {
   constructor(selector, numArgs, sourceLoc, activationPathToken, nextInstruction) {
     super(selector, numArgs, sourceLoc, activationPathToken, nextInstruction);

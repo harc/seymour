@@ -186,6 +186,19 @@ class Activation {
     return this;
   }
 
+  IArray(size, nextInstruction) {
+    this.assertStackContainsAtLeastThisManyElements(size);
+    const arr = this.getVar('Array').makeNewInstance();
+    arr.setInstVar('size', size);
+    for (let idx = size; idx >= 1; idx--) {
+      const value = this.stack.pop();
+      arr.instVars[idx] = value;
+    }
+    this.stack.push(arr);
+    this.nextInstruction = nextInstruction;
+    return this;
+  }
+
   ISend(selector, numArgs, sourceLoc, activationPathToken, nextInstruction) {
     this.assertStackContainsAtLeastThisManyElements(numArgs + 1);
 

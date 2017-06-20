@@ -221,7 +221,18 @@ class Block extends AST {
   }
 }
 
-// TODO: ArrayLit
+class ArrayLit extends AST {
+  constructor(sourceLoc, es) {
+    super(sourceLoc);
+    this.es = es;
+  }
+
+  toInstruction(next) {
+    return this.es.reduceRight(
+        (rest, e) => e.toInstruction(rest),
+        new IArray(this.es.length, next));
+  }
+}
 
 class New extends AST {
   constructor(sourceLoc, _class, args, activationPathToken) {

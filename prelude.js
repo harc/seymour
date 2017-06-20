@@ -155,6 +155,75 @@ const preludeAST = (function() {
       return null;
     }
 
+    class Array with size;
+    def Array.init(size) {
+      if (size.getClass() != Number or: {size < 0}) then: {
+        new InvalidArgument(this, "init", "size", size).throw();
+      };
+      this.size = size;
+    }
+    def Array.getSize() = this.size;
+    def Array.get(idx) {
+      if (idx.getClass() != Number or: {idx < 1 or: {idx > this.size}}) then: {
+        new InvalidArgument(this, "get", "idx", idx).throw();
+      };
+      var ans = null;
+      @{
+        let value = this.receiver.instVars[this.getVar('idx')];
+        this.setVar('ans', value === undefined ? null : value);
+      }@
+      return ans;
+    }
+    def Array.set(idx, value) {
+      if (idx.getClass() != Number or: {idx < 1 or: {idx > this.size}}) then: {
+        new InvalidArgument(this, "set", "idx", idx).throw();
+      };
+      @{ this.receiver.instVars[this.getVar('idx')] = this.getVar('value'); }@
+    }
+    def forEach Array do: fn {
+      for 1 to: this.size do: {idx |
+        fn(this.get(idx), idx);
+      };
+    }
+    def Array.map(fn) {
+      var ans = new Array(this.size);
+      forEach this do: {x, idx |
+        var value = fn(x);
+        ans.set(idx, value);
+      };
+      return ans;
+    }
+    def Array.reduce(fn, z) {
+      var acc = z;
+      forEach this do: {x |
+        acc = fn(acc, x);
+      };
+      return acc;
+    }
+    def Array.toString() {
+      var first = true;
+      var meat = "";
+      forEach this do: {x |
+        if first then: {
+          first = false;
+        } else: {
+          meat = meat + ", ";
+        };
+        meat = meat + x.toString();
+      };
+      return "[" + meat + "]";
+    }
+
+    def Number to: end {
+      var size = end - this + 1;
+      var arr = new Array(size);
+      for 1 to: size do: {idx |
+        var num = this + idx - 1;
+        arr.set(idx, num);
+      };
+      return arr;
+    }
+
     // Exceptions
 
     def Object.throw() {
