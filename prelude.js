@@ -20,11 +20,11 @@ const preludeAST = (function() {
       @{ this.setVar('ans', this.receiver !== this.getVar('that')); }@
       return ans;
     }
-    def Object.println() {
+    def Object.log() {
       @{ console.log('>>', this.receiver); }@
       return null;
     }
-    def Object.printsln() = this.toString().println();
+    def Object.println() = this.toString().log();
     def Object.toIdString() {
       var ans = null;
       @{
@@ -42,12 +42,12 @@ const preludeAST = (function() {
     }
 
     class Class;
-    def Class.getName() {
+    def Class.name() {
       var ans = null;
       @{ this.setVar('ans', this.receiver.name); }@
       return ans;
     }
-    def Class.toString() = "class " + this.getName();
+    def Class.toString() = "class " + this.name();
 
     class Null;
     def Null.toString() = "null";
@@ -75,13 +75,13 @@ const preludeAST = (function() {
     }
 
     class String extends Comparable;
-    def String.getSize() {
+    def String.size() {
       var ans = null;
       @{ this.setVar('ans', this.receiver.length); }@
       return ans;
     }
     def String.get(idx) {
-      if (1 <= idx and: {idx <= this.getSize()}) then: {
+      if (1 <= idx and: {idx <= this.size()}) then: {
         var ans = null;
         @{ this.setVar('ans', this.receiver[this.getVar('idx') - 1]); }@
         return ans;
@@ -162,7 +162,7 @@ const preludeAST = (function() {
       };
       this.size = size;
     }
-    def Array.getSize() = this.size;
+    def Array.size() = this.size;
     def Array.get(idx) {
       if (idx.getClass() != Number or: {idx < 1 or: {idx > this.size}}) then: {
         new InvalidArgument(this, "get", "idx", idx).throw();
@@ -232,7 +232,7 @@ const preludeAST = (function() {
 
     class Exception;
     def Exception.toString() {
-      return "[" + this.getClass().getName() + " exception]";
+      return "[" + this.getClass().name() + " exception]";
     }
 
     class IndexOutOfBounds extends Exception with collection, index;
