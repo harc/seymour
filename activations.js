@@ -84,7 +84,7 @@ class Activation {
     }
   }
 
-  IPrim(primFn, nextInstruction) {
+  IPrim(primFn, sourceLoc, nextInstruction) {
     primFn.call(this);
     this.nextInstruction = nextInstruction;
     return this;

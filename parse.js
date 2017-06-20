@@ -41,6 +41,11 @@ const parse = (function() {
       return new ExpStmt(this.sourceLoc(), e.toAST());
     },
 
+    Stmt_js(_oc, _codeChars, _cp) {
+      var code = this.sourceString.substring(2, this.sourceString.length - 2);
+      return new JSPrim(this.sourceLoc(), code);
+    },
+
     ClassDecl(_class, C, _optExtends, optS, _optWith, optXs, _sc) {
       return new ClassDecl(
          this.sourceLoc(),

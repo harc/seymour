@@ -4,10 +4,85 @@ const preludeAST = (function() {
 
   const source = `
     def Object.init() {}
+    def Object == that {
+      var ans = null;
+      @{ this.varValues.ans = this.receiver === this.varValues.that; }@
+      return ans;
+    }
+    def Object != that {
+      var ans = null;
+      @{ this.varValues.ans = this.receiver !== this.varValues.that; }@
+      return ans;
+    }
+    def Object.toString() {
+      var ans = null;
+      @{ this.varValues.ans = '' + this.receiver; }@
+      return ans;
+    }
+    def Object.println() {
+      @{ console.log('>>', this.receiver); }@
+      return null;
+    }
 
     class Class;
 
     class Null;
+
+    class Comparable;
+    def Comparable < that {
+      var ans = null;
+      @{ this.varValues.ans = this.receiver < this.varValues.that; }@
+      return ans;
+    }
+    def Comparable <= that {
+      var ans = null;
+      @{ this.varValues.ans = this.receiver <= this.varValues.that; }@
+      return ans;
+    }
+    def Comparable > that {
+      var ans = null;
+      @{ this.varValues.ans = this.receiver > this.varValues.that; }@
+      return ans;
+    }
+    def Comparable >= that {
+      var ans = null;
+      @{ this.varValues.ans = this.receiver >= this.varValues.that; }@
+      return ans;
+    }
+
+    class String extends Comparable;
+    def String + that {
+      var ans = that.toString();
+      @{ this.varValues.ans = this.receiver + this.varValues.ans; }@
+      return ans;
+    }
+
+    class Number extends Comparable;
+    def Number + that {
+      var ans = null;
+      @{ this.varValues.ans = this.receiver + this.varValues.that; }@
+      return ans;
+    }
+    def Number - that {
+      var ans = null;
+      @{ this.varValues.ans = this.receiver - this.varValues.that; }@
+      return ans;
+    }
+    def Number * that {
+      var ans = null;
+      @{ this.varValues.ans = this.receiver * this.varValues.that; }@
+      return ans;
+    }
+    def Number / that {
+      var ans = null;
+      @{ this.varValues.ans = this.receiver / this.varValues.that; }@
+      return ans;
+    }
+    def Number % that {
+      var ans = null;
+      @{ this.varValues.ans = this.receiver % this.varValues.that; }@
+      return ans;
+    }
 
     class Boolean;
     

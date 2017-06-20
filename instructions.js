@@ -12,8 +12,8 @@ class Instruction {
 }
 
 class IPrim extends Instruction {
-  constructor(primFn, nextInstruction) {
-    super(primFn, nextInstruction);
+  constructor(primFn, sourceLoc, nextInstruction) {
+    super(primFn, sourceLoc, nextInstruction);
   }
 }
 

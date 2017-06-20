@@ -10,6 +10,18 @@ class AST {
   }
 }
 
+class JSPrim extends AST {
+  constructor(sourceLoc, code) {
+    super(sourceLoc);
+    this.code = code;
+    this.primFn = eval('(function() {' + code + '})');
+  }
+
+  toInstruction(next) {
+    return new IPrim(this.primFn, this.sourceLoc, next);
+  }
+}
+
 class Ident extends AST {
   constructor(sourceLoc, name) {
     super(sourceLoc);

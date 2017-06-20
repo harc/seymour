@@ -13,6 +13,7 @@ Seymour {
     | this "." varName "=" Exp ";"  -- instVarAssign
     | return Exp ";"                -- return
     | Exp ";"                       -- exp
+    | "@{" (~"}@" any)* "}@"        -- js
 
   ClassDecl
     = class className (extends className)? (with NonemptyListOf<varName, ",">)? ";"
