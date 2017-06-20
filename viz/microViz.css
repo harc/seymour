@@ -1,0 +1,229 @@
+.microViz .CodeMirror {
+  display: inline-block;
+  min-width: 600px;
+  min-height: 400px;
+  height: auto;
+  border-right: 1px dashed hsl(0, 0%, 80%);
+}
+
+.microViz .CodeMirror-scroll {
+  height: auto;
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
+.microViz .CodeMirror .even {
+  background: #fbfbfb;
+}
+/*-------------------------------*/
+
+.microViz {
+  display: flex;
+  overflow: auto;
+  padding: 10px 0;
+}
+
+.microViz microVizHolder {
+  display: inline-block;
+}
+
+.microViz microVizDiv {
+  display: inline-block;
+  white-space: nowrap;
+  font-family: monospace;
+  line-height: 1.4;
+  padding: 4px 0; /* same as codemirror-lines */
+}
+
+.microViz microVizDiv > program {
+  display: inline-block;
+  float: left;
+}
+
+.microViz microVizDiv > program > line {
+  display: block;
+  padding-right: 10px;
+}
+
+
+.microViz microVizDiv > program > line:nth-child(2n) {
+  background: #fbfbfb;
+}
+
+.microViz microVizDiv > .topLevel {
+  min-width: 1000px;
+}
+
+/* top-level send, whose sourceloc is always the entire program */
+.microViz microVizDiv > send {
+  display: inline-block;
+}
+
+.microViz microVizDiv event,
+/*microVizDiv send,*/
+.microViz microVizDiv localEventGroup,
+.microViz microVizDiv remoteEventGroup,
+.microViz microVizDiv spacer,
+.microViz microVizDiv wrapper {
+  display: inline-block;
+  float: left;
+}
+
+.microViz microVizDiv send {
+  display: inline-flex;
+  float: left;
+}
+
+.microViz microVizDiv send[loopy="true"] {
+  border-radius: 4px;
+  background: hsla(0, 0%, 0%, 0.05);
+  box-shadow: 1px 1px 2px #ddd;
+  margin: 0 4pt;
+}
+
+.microViz microVizDiv send[empty="true"] > remoteEventGroup > emptySendDot {
+  color: hsl(0, 0%, 30%);
+}
+
+.microViz microVizDiv event {
+  margin: 0 10px;
+}
+
+.microViz microVizDiv send {
+  margin: 0;
+}
+
+.microViz microVizDiv send[empty="true"].firstInLine {
+  margin-left: 10px;
+}
+
+.microViz microVizDiv send[empty="true"].lastInLine {
+  margin-right: 10px;
+}
+
+.microViz microVizDiv send[empty="true"] + event:not(.firstInLine) {
+  margin-left: 0;
+}
+
+.microViz microVizDiv event + send[empty="true"]:not(.firstInLine) {
+  margin-left: -10px;
+}
+
+.microViz microVizDiv localEventGroup:nth-child(1n+2),
+.microViz microVizDiv remoteEventGroup:nth-child(1n+2) {
+  border-left: 1px dashed #aaa;
+}
+
+.microViz microVizDiv event.remote {
+  opacity: 0.5;
+}
+
+.microViz microVizDiv event.remote::before {
+  content: '(';
+}
+
+.microViz microVizDiv event.remote::after {
+  content: ')';
+}
+
+.microViz microVizDiv .firstInLine,
+.microViz microVizDiv spacer,
+.microViz microVizDiv .pushDown {
+  clear: left;
+}
+
+/* only debugging stuff past this point */
+
+/*
+.microViz microVizDiv localEventGroup,
+.microViz microVizDiv remoteEventGroup,
+.microViz microVizDiv wrapper {
+  border: 1px solid cornflowerblue;
+  border-radius: 4px;
+  padding: 1px;
+}
+
+.microViz microVizDiv wrapper {
+  border-color: red;
+}
+
+.microViz microVizDiv send {
+  border: 1px solid red;
+  border-radius: 4px;
+  padding: 1px;
+}
+
+.microViz microVizDiv spacer::after {
+  content: '(spacer)';
+  color: hsl(0, 0%, 70%);
+}
+*/
+
+/* ------------------------------------ */
+
+.microViz microVizDiv > model {
+  display: block;
+}
+
+.microViz microVizDiv > model send,
+.microViz microVizDiv > model localEventGroup,
+.microViz microVizDiv > model remoteEventGroup {
+  display: block;
+  vertical-align: top;
+  margin: 4px;
+}
+
+.microViz microVizDiv > model send,
+.microViz microVizDiv > model event {
+  display: inline-block;
+  float: left;
+  clear: left;
+}
+
+.microViz microVizDiv > model remoteEventGroup {
+  opacity: 0.6;
+}
+
+.microViz microVizDiv > model localEventGroup,
+.microViz microVizDiv > model remoteEventGroup {
+  display: inline-block;
+  border: 1px solid cornflowerblue;
+  border-radius: 4px;
+  margin-left: 8pt;
+}
+
+.microViz microVizDiv > model event {
+  background: #efefef;
+  border-radius: 4px;
+  padding: 4px;
+  margin: 2px;
+}
+
+.microViz microVizDiv > model send > label {
+  display: block;
+  margin: 2px;
+}
+
+.microViz {
+  position: relative;
+}
+
+.microViz microVizBackground {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  /*background: gray;*/
+  z-index: -1;
+}
+
+.microViz line {
+  display: block;
+  min-height: 1em;
+  min-width: 2px;
+}
+
+.microViz line.even {
+  background: #fbfbfb;
+}

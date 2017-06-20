@@ -1,5 +1,12 @@
-.CodeMirror {
-  border: 1px solid #ddd;
+body {
+  margin: 0;
+}
+
+#microVizContainer {
+  display: block;
+  padding: 0;
+  border-bottom: 1px solid #ddd;
+  height: 50vh;
 }
 
 parseError {

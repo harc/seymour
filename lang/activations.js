@@ -275,8 +275,9 @@ class Activation {
 }
 
 class TopLevelActivation extends Activation {
-  constructor(code) {
+  constructor(sourceLoc, code, R) {
     super([], [], null, null, code);
+    this.env = R.program(sourceLoc);
     this.installBuiltins();
   }
 

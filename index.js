@@ -7,16 +7,23 @@ console.debug = function(...args) {
   }
 };
 
+const microViz = new MicroViz(microVizContainer);
+const editor = microViz.editor;
+editor.setOption('lineNumbers', true);
+
 let interpreter;
+let R;
 let timeoutId;
 
-function run(optCode) {
-  if (optCode) {
+function run(sourceLoc, code) {
+  if (arguments.length === 2) {
     if (timeoutId !== null) {
       clearTimeout(timeoutId);
     }
     Obj.nextId = 0;
-    interpreter = new Interpreter(optCode);
+    R = new EventRecorder();
+    interpreter = new Interpreter(sourceLoc, code, R);
+    microViz.setEnv(interpreter.global.env);
   }
 
   const done = interpreter.runForMillis(30);
@@ -31,8 +38,6 @@ function run(optCode) {
 let parseErrorWidget;
 const m = seymourGrammar.matcher();
 
-const editor = CodeMirror.fromTextArea(myTextArea, { lineNumbers: true });
-
 editor.on('beforeChange', function(cmInstance, changeObj) {
   var insertedText = changeObj.text.join('\n');
   var fromIdx = editor.indexFromPos(changeObj.from);
@@ -40,7 +45,7 @@ editor.on('beforeChange', function(cmInstance, changeObj) {
   m.replaceInputRange(fromIdx, toIdx, insertedText);
 });
 
-editor.on('change', function(cmInstance, changeObj) {
+editor.on('changes', function(cmInstance, changes) {
   if (parseErrorWidget) {
     editor.removeLineWidget(parseErrorWidget);
     parseErrorWidget = undefined;
@@ -57,7 +62,7 @@ editor.on('change', function(cmInstance, changeObj) {
     console.debug('ast', ast);
     const code = preludeAST.toInstruction(ast.toInstruction(new IDone()));
     console.debug('code', code);
-    run(code);
+    run(ast.sourceLoc, code);
   } else {
     const expected = r.getExpectedText();
     const pos = editor.doc.posFromIndex(r.getRightmostFailurePosition());

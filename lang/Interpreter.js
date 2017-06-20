@@ -1,8 +1,9 @@
 "use strict";
 
 class Interpreter {
-  constructor(code) {
-    this.global = new TopLevelActivation(code);
+  constructor(sourceLoc, code, R) {
+    this.R = R;
+    this.global = new TopLevelActivation(sourceLoc, code, R);
     this.currentActivation = this.global;
   }
 

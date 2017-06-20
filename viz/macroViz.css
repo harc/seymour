@@ -1,0 +1,33 @@
+.macroViz {
+  white-space: nowrap;
+  padding-bottom: 5px;
+}
+
+.macroViz macroViz {
+  display: block;
+}
+
+.macroViz macroVizNode {
+  display: inline-block;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.macroViz macroVizNode > label {
+  display: block;
+  color: #555;
+  border-radius: 2px;
+  box-shadow: 1px 1px 0px hsl(0, 0%, 0%);
+  padding: 3px;
+  background: hsl(0, 0%, 90%);
+  margin: 0px 1px;
+  margin-bottom: 0px;
+}
+
+.macroViz macroVizNode > label:hover {
+  background: hsl(0, 0%, 80%);
+}
+
+.macroViz macroVizNode > label > text {
+  display: none;
+}
