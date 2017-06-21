@@ -27,6 +27,7 @@ class MicroViz {
       return;
     }
 
+
     Object.keys(this.widgetForLine)
       .forEach(line => this.widgetForLine[line].clear());
     this.microVizParent.innerHTML = '';
@@ -48,6 +49,7 @@ class MicroViz {
     this.topLevelSend = new SendView(this, this.microVizEvents, this.microVizEvents.sourceLoc, '');
     this.microVizParent.appendChild(this.topLevelSend.DOM);
 
+    this.tagLines(this.topLevelSend.startLine, this.topLevelSend.endLine);
     range(this.topLevelSend.startLine, this.topLevelSend.endLine)
       .forEach(line => this.fixHeight(line));
   }
@@ -61,10 +63,23 @@ class MicroViz {
   setupBackground() {
     range(1, this.editor.getValue().split('\n').length)
         .forEach(line => {
-          const classes = line % 2 === 0 ? 'even' : 'odd';
-          const lineDiv = d('line', {startLine: line, endLine: line, class: classes});
+          const lineDiv = d('line', {startLine: line, endLine: line});
           this.background.appendChild(lineDiv);
         });
+  }
+
+  tagLines(startLine, endLine) {
+    const realEndLine = this.editor.getValue().split('\n').length;
+    range(startLine, realEndLine)
+      .forEach(lineNumber => {
+        const cmLineNumber = lineNumber - 1;
+        this.editor.removeLineClass(cmLineNumber, 'text');
+      })
+    range(startLine, endLine)
+      .forEach(lineNumber => {
+        const cmLineNumber = lineNumber - 1;
+        this.editor.addLineClass(cmLineNumber, 'text', `line${lineNumber}`);
+      });
   }
 
   fixHeight(lineNumber) {
@@ -72,8 +87,6 @@ class MicroViz {
     const $$ = (el, query) => [].slice.call(el.querySelectorAll(query));
 
     const cmLineNumber = lineNumber - 1;
-    this.editor.addLineClass(cmLineNumber, 'text', `line${lineNumber}`);
-    this.editor.addLineClass(cmLineNumber, 'background', lineNumber % 2 === 0 ? 'even' : 'odd');
 
     const line = $(this.container, `.CodeMirror .line${lineNumber}.CodeMirror-line`);
     const itemsOnLine = $$(this.container, '*[endLine="' + lineNumber + '"]').concat(line);

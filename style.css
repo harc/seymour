@@ -6,6 +6,12 @@ body {
   padding: 0;
   border-bottom: 1px solid #ddd;
   height: 50vh;
+  width: 100vw;
+}
+
+#macroVizScroller {
+  overflow: auto;
+  height: 50vh;
 }
 
 parseError {

@@ -7,14 +7,15 @@
 }
 
 .microViz .CodeMirror-scroll {
+  min-height: 100%;
   height: auto;
   overflow-y: hidden;
   overflow-x: auto;
 }
 
-.microViz .CodeMirror .even {
-  background: #fbfbfb;
-}
+.microViz .CodeMirror-code > div:nth-child(even){
+  background: hsl(0, 0%, 98%);
+} 
 /*-------------------------------*/
 
 .microViz {
@@ -25,6 +26,9 @@
 
 .microViz microVizHolder {
   display: inline-block;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .microViz microVizDiv {
@@ -38,16 +42,6 @@
 .microViz microVizDiv > program {
   display: inline-block;
   float: left;
-}
-
-.microViz microVizDiv > program > line {
-  display: block;
-  padding-right: 10px;
-}
-
-
-.microViz microVizDiv > program > line:nth-child(2n) {
-  background: #fbfbfb;
 }
 
 .microViz microVizDiv > .topLevel {
@@ -224,6 +218,6 @@
   min-width: 2px;
 }
 
-.microViz line.even {
-  background: #fbfbfb;
+.microViz line:nth-child(even) {
+  background: hsl(0, 0%, 98%);
 }
