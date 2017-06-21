@@ -47,7 +47,7 @@ class Env {
       const sendEvent = env.programOrSendEvent;
       if (this.programOrSendEventToMicroVizEvents.has(sendEvent)) {
         if (this.shouldOnlyShowWhenLocal(event)) {
-          return sendEvent.sourceLoc.strictlyContains(event.sourceLoc) ? sendEvent : null;
+          return sendEvent.sourceLoc.strictlyContains(event.env.sourceLoc) ? sendEvent : null;
         } else {
           return sendEvent;
         }
