@@ -28,3 +28,7 @@ parseError {
   -moz-user-select: none;
   user-select: none;
 }
+
+.highlight-emptysend {
+  background: HSL(217, 96%, 90%);
+}

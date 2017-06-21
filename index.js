@@ -15,6 +15,29 @@ macroViz.addListener('click', (event, _) => microViz.setEnv(event.activationEnv)
 const editor = microViz.editor;
 editor.setOption('lineNumbers', true);
 
+let sendHighlight = null;
+microViz.addListener('mouseover', (event, view) => {
+  if (event instanceof SendEvent && 
+      !view.isImplementation && 
+      view.microVizEvents.eventGroups.length === 0) {
+    sendHighlight = highlightSourceLoc(event.sourceLoc, 'emptysend');
+  }
+});
+
+microViz.addListener('mouseout', (_, __) => {
+  if (sendHighlight) { sendHighlight.clear(); }
+});
+
+function highlightSourceLoc(sourceLoc, highlightType) {
+  if (!sourceLoc) {
+    return;
+  }
+  const startPos = editor.doc.posFromIndex(sourceLoc.startPos);
+  const endPos = editor.doc.posFromIndex(sourceLoc.endPos);
+  return editor.doc.markText(startPos, endPos, {className: 'highlight-' + highlightType});
+}
+
+
 let interpreter;
 let R;
 let timeoutId;
