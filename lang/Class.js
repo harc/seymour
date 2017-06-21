@@ -24,11 +24,11 @@ class Class extends Obj {
     return new Obj(this);
   }
 
-  declMethod(selector, formals, code) {
+  declMethod(sourceLoc, selector, formals, code) {
     if (Object.prototype.hasOwnProperty.call(this.methods, selector)) {
       throw new Error('duplicate declaration of method ' + selector + ' in class ' + this.name);
     }
-    this.methods[selector] = new Method(this, selector, formals, code);
+    this.methods[selector] = new Method(sourceLoc, this, selector, formals, code);
   }
 
   getMethod(selector) {

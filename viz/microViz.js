@@ -69,7 +69,6 @@ class MicroViz {
     this.editor.addLineClass(cmLineNumber, 'background', lineNumber % 2 === 0 ? 'even' : 'odd');
 
     const line = $(this.container, `.CodeMirror .line${lineNumber}.CodeMirror-line`);
-    console.log('lineNumber', lineNumber, 'line', line);
     const itemsOnLine = $$(this.container, '*[endLine="' + lineNumber + '"]').concat(line);
 
     itemsOnLine.forEach(item => item.style.paddingBottom = '0px');

@@ -78,8 +78,8 @@ class ICond extends Instruction {
 }
 
 class IBlock extends Instruction {
-  constructor(formals, code, nextInstruction) {
-    super(formals, code, nextInstruction);
+  constructor(sourceLoc, formals, code, nextInstruction) {
+    super(sourceLoc, formals, code, nextInstruction);
   }
 }
 
@@ -90,8 +90,8 @@ class IDeclClass extends Instruction {
 }
 
 class IDeclMethod extends Instruction {
-  constructor(selector, formals, code, nextInstruction) {
-    super(selector, formals, code, nextInstruction);
+  constructor(sourceLoc, selector, formals, code, nextInstruction) {
+    super(sourceLoc, selector, formals, code, nextInstruction);
   }
 }
 

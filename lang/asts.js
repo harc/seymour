@@ -133,9 +133,10 @@ class MethodDecl extends AST {
   toInstruction(next) {
     return new IPushFromVar(this.className.name,
       new IDeclMethod(
+        this.sourceLoc,
         this.selectorParts.map(ident => ident.name).join(''),
-        this.formals.map(ident => ident.name),
-        this.body.toInstruction(new IPushThis(new INonLocalReturn(null))),
+        this.formals,
+        this.body.toInstruction(new IPush(null, new INonLocalReturn(null))),
         next));
   }
 }
@@ -215,7 +216,8 @@ class Block extends AST {
 
   toInstruction(next) {
     return new IBlock(
-        this.formals.map(ident => ident.name),
+        this.sourceLoc,
+        this.formals,
         this.bodyExpr.toInstruction(new ILocalReturn(null)),
         next);
   }

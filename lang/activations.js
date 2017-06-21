@@ -1,14 +1,18 @@
 "use strict";
 
 class Activation {
-  constructor(args, formals, parent, caller, code) {
+  constructor(args, formals, parent, caller, sourceLoc, code) {
+    if (caller) {
+      this.R = caller.R;
+      this.env = this.R.mkEnv(sourceLoc, caller.env);
+    }
     this.args = args;
     this.varDeclActivations = Object.create(parent === null ? null : parent.varDeclActivations);
     this.varValues = Object.create(null);
     if (args.length < formals.length) {
       throw new Error('not enough arguments');
     }
-    formals.forEach((x, idx) => this.declVar(x, args[idx]));
+    formals.forEach((formal, idx) => this.declVar(formal.sourceLoc, formal.name, args[idx]));
     this.parent = parent;
     this.caller = caller;
     this.stack = [];
@@ -31,12 +35,15 @@ class Activation {
     throw new Error('subclass responsibility');
   }
 
-  declVar(name, value) {
+  declVar(sourceLoc, name, value) {
     if (this.varDeclActivations[name] === this) {
       throw new Error('duplicate declaration for ' + name);
     }
     this.varDeclActivations[name] = this;
     this.varValues[name] = value;
+    if (sourceLoc) {
+      this.R.declVar(sourceLoc, this.env, name, value);
+    }
   }
 
   setVar(name, value) {
@@ -111,7 +118,11 @@ class Activation {
 
   IPopIntoVar(name, sourceLoc, nextInstruction) {
     this.assertStackContainsAtLeastThisManyElements(1);
-    this.setVar(name, this.stack.pop());
+    const value = this.stack.pop();
+    this.setVar(name, value);
+    if (sourceLoc) {
+      this.R.assignVar(sourceLoc, this.env, this.varDeclActivations[name].env, name, value);
+    }
     this.nextInstruction = nextInstruction;
     return this;
   }
@@ -120,13 +131,17 @@ class Activation {
     this.assertStackContainsAtLeastThisManyElements(1);
     const value = this.stack.pop();
     this.receiver.setInstVar(name, value);
+    if (sourceLoc) {
+      this.R.assignInstVar(sourceLoc, this.env, this.receiver, name, value);
+    }
     this.nextInstruction = nextInstruction;
     return this;
   }
 
   IDeclVar(name, sourceLoc, nextInstruction) {
     this.assertStackContainsAtLeastThisManyElements(1);
-    this.declVar(name, this.stack.pop());
+    const value = this.stack.pop();
+    this.declVar(sourceLoc, name, value);
     this.nextInstruction = nextInstruction;
     return this;
   }
@@ -155,8 +170,8 @@ class Activation {
     return this;
   }
 
-  IBlock(formals, code, nextInstruction) {
-    this.stack.push(new BlockClosure(formals, code, this));
+  IBlock(sourceLoc, formals, code, nextInstruction) {
+    this.stack.push(new BlockClosure(sourceLoc, formals, code, this));
     this.nextInstruction = nextInstruction;
     return this;
   }
@@ -205,6 +220,10 @@ class Activation {
     const receiver = this.stack.pop();
     console.debug('send:', receiver, '.', selector, '(', ...args, ')', sourceLoc, activationPathToken);
 
+    if (sourceLoc) {
+      this.R.send(sourceLoc, this.env, receiver, selector, args);
+    }
+
     if (receiver instanceof BlockClosure && selector === 'call') {
       this.nextInstruction = nextInstruction;
       return new BlockActivation(receiver, args, this);
@@ -227,6 +246,10 @@ class Activation {
       args.unshift(this.stack.pop());
     }
     console.debug('super send:', this.receiver, '.', selector, '(', ...args, ')', sourceLoc, activationPathToken);
+    if (sourceLoc) {
+      this.R.send(sourceLoc, this.env, receiver, selector, args);
+    }
+
     const _class = methodActivation.method.class.superClass;
     const method = _class.getMethod(selector);
     this.nextInstruction = nextInstruction;
@@ -241,6 +264,9 @@ class Activation {
     this.assertStackContainsAtLeastThisManyElements(1);
     const value = this.stack.pop();
     console.debug('(non-local) returning', value, sourceLoc);
+    if (sourceLoc) {
+      this.R.return(sourceLoc, this.env, value);
+    }
     const methodActivation = this.methodActivation;
     let activation = this;
     while (activation !== null) {
@@ -248,6 +274,9 @@ class Activation {
         const caller = methodActivation.caller;
         caller.stack.push(value);
         this.nextInstruction = null;
+        if (caller.hasSourceLoc()) {
+          caller.R.receive(caller.env, value);
+        }
         return caller;
       }
       activation = activation.caller;
@@ -276,9 +305,14 @@ class Activation {
 
 class TopLevelActivation extends Activation {
   constructor(sourceLoc, code, R) {
-    super([], [], null, null, code);
+    super([], [], null, null, sourceLoc, code);
+    this.R = R;
     this.env = R.program(sourceLoc);
     this.installBuiltins();
+  }
+
+  hasSourceLoc() {
+    return !!this.sourceLoc;
   }
 
   get receiver() {
@@ -300,18 +334,18 @@ class TopLevelActivation extends Activation {
     if (!(_class instanceof Class)) {
       throw new Error('not a class!');
     }
-    this.declVar(name, _class);
+    this.declVar(null, name, _class);
     this.nextInstruction = nextInstruction;
     return this;
   }
 
-  IDeclMethod(selector, formals, code, nextInstruction) {
+  IDeclMethod(sourceLoc, selector, formals, code, nextInstruction) {
     this.assertStackContainsAtLeastThisManyElements(1);
     const _class = this.stack.pop();
     if (!(_class instanceof Class)) {
       throw new Error('not a class!');
     }
-    _class.declMethod(selector, formals, code);
+    _class.declMethod(sourceLoc, selector, formals, code);
     this.nextInstruction = nextInstruction;
     return this;
   }
@@ -330,9 +364,13 @@ class TopLevelActivation extends Activation {
 
 class MethodActivation extends Activation {
   constructor(method, receiver, args, parent, caller) {
-    super(args, method.formals, parent, caller, method.code);
+    super(args, method.formals, parent, caller, method.sourceLoc, method.code);
     this.method = method;
     this._receiver = receiver;
+  }
+
+  hasSourceLoc() {
+    return !!this.method.sourceLoc;
   }
 
   get receiver() {
@@ -349,9 +387,13 @@ class MethodActivation extends Activation {
 }
 
 class BlockActivation extends Activation {
-  constructor(blockClosure, args, caller) {
-    super(args, blockClosure.formals, blockClosure.parent, caller, blockClosure.code);
-    this.blockClosure = blockClosure;
+  constructor(closure, args, caller) {
+    super(args, closure.formals, closure.parent, caller, closure.sourceLoc, closure.code);
+    this.blockClosure = closure;
+  }
+
+  hasSourceLoc() {
+    return !!this.blockClosure.sourceLoc;
   }
 
   get receiver() {
@@ -372,6 +414,12 @@ class BlockActivation extends Activation {
     this.assertStackContainsAtLeastThisManyElements(1);
     const value = this.stack.pop();
     console.debug('returning', value, sourceLoc);
+    if (sourceLoc) {
+      this.R.return(sourceLoc, this.env, value);
+    }
+    if (this.caller.hasSourceLoc()) {
+      this.caller.R.receive(this.caller.env, value);
+    }
     this.caller.stack.push(value);
     this.nextInstruction = null;
     return this.caller;

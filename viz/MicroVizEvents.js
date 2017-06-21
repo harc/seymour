@@ -19,7 +19,9 @@ class MicroVizEvents extends CheckedEmitter {
     if (eventIsLocal && this.lastEventGroup instanceof LocalEventGroup) {
       const lastEvent = this.lastEventGroup.lastEvent;
       if (event.sourceLoc.startPos >= lastEvent.sourceLoc.endPos ||  // Toby's rule
-          event.sourceLoc.strictlyContains(lastEvent.sourceLoc)) {   // Inside-out rule
+          event.sourceLoc.strictlyContains(lastEvent.sourceLoc) ||  // Inside-out rule
+          event.sourceLoc.equals(lastEvent.sourceLoc) &&
+              event.constructor !== lastEvent.constructor) {
         // no-op
       } else {
         const eventGroup = new LocalEventGroup();

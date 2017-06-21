@@ -6,6 +6,7 @@ class Env {
     this.sourceLoc = sourceLoc;
     this.callerEnv = callerEnv;
     this.programOrSendEvent = programOrSendEvent;
+    this.currentSendEvent = null;
     this.microVizEvents = new MicroVizEvents(programOrSendEvent, sourceLoc);
     this.programOrSendEventToMicroVizEvents = new Map([[programOrSendEvent, this.microVizEvents]]);
   }

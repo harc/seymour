@@ -5,35 +5,31 @@ class EventRecorder extends CheckedEmitter {
     super();
     this.registerEvent('addChild', 'child', 'parent');
     this.registerEvent('addRoot', 'root');
-
-    this.eventStack = [];  // ProgramEvent SendEvent*
-  }
-
-  get topOfEventStack() {
-    return this.eventStack[this.eventStack.length - 1];
+    this.currentProgramOrSendEvent = null;
   }
 
   program(sourceLoc) {
     const event = new ProgramEvent(sourceLoc);
-    this.eventStack.push(event);
+    this.currentProgramOrSendEvent = event;
     const env = this.mkEnv(sourceLoc);
     return env;
   }
 
   send(sourceLoc, env, recv, selector, args) {
     const event = new SendEvent(sourceLoc, env, recv, selector, args);
-    this.eventStack.push(event);
+    env.currentSendEvent = event;
+    this.currentProgramOrSendEvent = event;
     // this event is only sent to event handler after it gets an activation environment (see below)
   }
 
   mkEnv(newEnvSourceLoc) {
-    const programOrSendEvent = this.eventStack[this.eventStack.length - 1];
+    const programOrSendEvent = this.currentProgramOrSendEvent;
     const callerEnv = programOrSendEvent.env;
     const newEnv = new Env(newEnvSourceLoc, callerEnv, programOrSendEvent);
     if ((programOrSendEvent instanceof SendEvent || programOrSendEvent instanceof ProgramEvent) &&
         !programOrSendEvent.activationEnv) {
       programOrSendEvent.activationEnv = newEnv;
-      const parentEvent = this.eventStack[this.eventStack.length - 2];
+      const parentEvent = programOrSendEvent.env ? programOrSendEvent.env.programOrSendEvent : null;
       if (parentEvent) {
         parentEvent.children.push(programOrSendEvent);
         this.emit('addChild', programOrSendEvent, parentEvent);
@@ -45,9 +41,9 @@ class EventRecorder extends CheckedEmitter {
     return newEnv;
   }
 
-  receive(returnValue) {
-    this.topOfEventStack.returnValue = returnValue;
-    this.eventStack.pop();
+  receive(env, returnValue) {
+    env.currentSendEvent.returnValue = returnValue;
+    this.currentProgramOrSendEvent = env.programOrSendEvent;
     return returnValue;
   }
 
@@ -61,8 +57,8 @@ class EventRecorder extends CheckedEmitter {
   }
 
   _emit(event) {
-    this.topOfEventStack.children.push(event);
-    this.emit('addChild', event, this.topOfEventStack);
+    this.currentProgramOrSendEvent.children.push(event);
+    this.emit('addChild', event, this.currentProgramOrSendEvent);
     event.env.receive(event);
   }
 

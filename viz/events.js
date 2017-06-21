@@ -17,6 +17,8 @@ class Event {
       return '{function}';
     } else if (v === undefined) {
       return 'undefined';
+    } else if (v instanceof Obj) {
+      return '#' + v.id;
     } else {
       return JSON.stringify(v);
     }
