@@ -12,11 +12,16 @@ class Activation {
     if (args.length < formals.length) {
       throw new Error('not enough arguments');
     }
-    formals.forEach((formal, idx) => this.declVar(formal.sourceLoc, formal.name, args[idx]));
+    this.formals = formals;
     this.parent = parent;
     this.caller = caller;
     this.stack = [];
     this.nextInstruction = code;
+  }
+
+  declareFormals() {
+    this.formals.forEach(
+        (formal, idx) => this.declVar(formal.sourceLoc, formal.name, this.args[idx]));
   }
 
   step() {
@@ -180,7 +185,7 @@ class Activation {
     throw new Error('class declarations are only allowed in the top-level activation');
   }
 
-  IDeclMethod(selector, formals, code, nextInstruction) {
+  IDeclMethod(sourceLoc, selector, className, formals, code, nextInstruction) {
     throw new Error('method declarations are only allowed in the top-level activation');
   }
 
@@ -339,13 +344,13 @@ class TopLevelActivation extends Activation {
     return this;
   }
 
-  IDeclMethod(sourceLoc, selector, formals, code, nextInstruction) {
+  IDeclMethod(sourceLoc, selector, className, formals, code, nextInstruction) {
     this.assertStackContainsAtLeastThisManyElements(1);
     const _class = this.stack.pop();
     if (!(_class instanceof Class)) {
       throw new Error('not a class!');
     }
-    _class.declMethod(sourceLoc, selector, formals, code);
+    _class.declMethod(sourceLoc, selector, className, formals, code);
     this.nextInstruction = nextInstruction;
     return this;
   }
@@ -367,6 +372,12 @@ class MethodActivation extends Activation {
     super(args, method.formals, parent, caller, method.sourceLoc, method.code);
     this.method = method;
     this._receiver = receiver;
+    this.declareFormals();
+  }
+
+  declareFormals() {
+    this.declVar(this.method.className.sourceLoc, 'this', this.receiver);
+    super.declareFormals();
   }
 
   hasSourceLoc() {
@@ -390,6 +401,7 @@ class BlockActivation extends Activation {
   constructor(closure, args, caller) {
     super(args, closure.formals, closure.parent, caller, closure.sourceLoc, closure.code);
     this.blockClosure = closure;
+    this.declareFormals();
   }
 
   hasSourceLoc() {

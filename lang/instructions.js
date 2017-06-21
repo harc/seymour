@@ -90,8 +90,8 @@ class IDeclClass extends Instruction {
 }
 
 class IDeclMethod extends Instruction {
-  constructor(sourceLoc, selector, formals, code, nextInstruction) {
-    super(sourceLoc, selector, formals, code, nextInstruction);
+  constructor(sourceLoc, selector, className, formals, code, nextInstruction) {
+    super(sourceLoc, selector, className, formals, code, nextInstruction);
   }
 }
 

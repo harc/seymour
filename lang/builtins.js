@@ -12,7 +12,7 @@ TopLevelActivation.prototype.installBuiltins = function() {
   const Block = declClass('Block', _Object, []);
   {
     let loop, callCond, callBody;
-    Block.declMethod(null, 'while_do:', [new Ident(null, 'body')],
+    Block.declMethod(null, 'while_do:', new Ident(null, 'Block'), [new Ident(null, 'body')],
       new IPush(0,
         new IDeclVar('activationPathToken', null,
           loop = new IPushThis(

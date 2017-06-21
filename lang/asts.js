@@ -135,6 +135,7 @@ class MethodDecl extends AST {
       new IDeclMethod(
         this.sourceLoc,
         this.selectorParts.map(ident => ident.name).join(''),
+        this.className,
         this.formals,
         this.body.toInstruction(new IPush(null, new INonLocalReturn(null))),
         next));
