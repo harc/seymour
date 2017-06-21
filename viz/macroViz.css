@@ -16,11 +16,10 @@
 .macroViz macroVizNode > label {
   display: block;
   color: #555;
-  box-shadow: 1px 1px 0px hsl(0, 0%, 0%);
+  box-shadow: 1px 1px 2px hsl(0, 0%, 0%);
   padding: 3px;
   background: hsl(0, 0%, 90%);
-  margin: 0px 1px;
-  margin-bottom: 0px;
+  margin: 0;
 }
 
 .macroViz macroVizNode[isFocusable="false"] > label {
