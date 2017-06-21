@@ -226,9 +226,7 @@ class Activation {
     const receiver = this.stack.pop();
     console.debug('send:', receiver, '.', selector, '(', ...args, ')', sourceLoc, activationPathToken);
 
-    if (sourceLoc) {
-      this.R.send(sourceLoc, this.env, receiver, selector, args);
-    }
+    this.R.send(sourceLoc, this.env, receiver, selector, args, activationPathToken);
 
     if (receiver instanceof BlockClosure && selector === 'call') {
       this.nextInstruction = nextInstruction;
@@ -252,9 +250,8 @@ class Activation {
       args.unshift(this.stack.pop());
     }
     console.debug('super send:', this.receiver, '.', selector, '(', ...args, ')', sourceLoc, activationPathToken);
-    if (sourceLoc) {
-      this.R.send(sourceLoc, this.env, receiver, selector, args);
-    }
+
+    this.R.send(sourceLoc, this.env, receiver, selector, args, activationPathToken);
 
     const _class = methodActivation.method.class.superClass;
     const method = _class.getMethod(selector);
@@ -280,9 +277,7 @@ class Activation {
         if (sourceLoc) {
           this.R.nonLocalReturn(sourceLoc, this.env, value);
         }
-        if (caller.hasSourceLoc()) {
-          caller.R.receive(caller.env, value);
-        }
+        caller.R.receive(caller.env, value);
         return caller;
       }
       activation = activation.caller;
@@ -430,9 +425,7 @@ class BlockActivation extends Activation {
     if (sourceLoc) {
       this.R.localReturn(sourceLoc, this.env, value);
     }
-    if (this.caller.hasSourceLoc()) {
-      this.caller.R.receive(this.caller.env, value);
-    }
+    this.caller.R.receive(this.caller.env, value);
     this.caller.stack.push(value);
     this.nextInstruction = null;
     return this.caller;

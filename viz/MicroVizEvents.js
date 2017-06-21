@@ -15,6 +15,10 @@ class MicroVizEvents extends CheckedEmitter {
   }
 
   add(event) {
+    if (!this.sourceLoc) {
+      return;
+    }
+
     // TODO: make sure that `contains` is the right thing -- it used to be strictlyContains,
     // but that was causing problems for programs that were a single variable declaration, e.g.,
     // `var x = 2;`

@@ -34,6 +34,10 @@ class Env {
   }
 
   targetProgramOrSendEventFor(event) {
+    if (!event.sourceLoc) {
+      return null;
+    }
+
     if (event.env === this) {
       return this.programOrSendEvent;
     }
