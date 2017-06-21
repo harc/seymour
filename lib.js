@@ -14,3 +14,11 @@ function d(elementType, attributes, ...children) {
   }
   return node;
 }
+
+function spaces(n) {
+  let str = '';
+  while (n-- > 0) {
+    str += ' ';
+  }
+  return str;
+}

@@ -16,6 +16,7 @@ const editor = microViz.editor;
 editor.setOption('lineNumbers', true);
 
 let sendHighlight = null;
+let resultWidget = null;
 
 microViz.addListener('mouseover', (event, view) => {
   if (event instanceof SendEvent &&
@@ -23,13 +24,14 @@ microViz.addListener('mouseover', (event, view) => {
       view.microVizEvents.eventGroups.length === 0) {
     view.DOM.setAttribute('title', event.toDetailString());
     sendHighlight = highlightSourceLoc(event.sourceLoc, 'emptysend');
+    resultWidget = addResultWidget(event.sourceLoc, event._valueString(event.returnValue));
   }
 });
 
 microViz.addListener('mouseout', (_, view) => {
   if (sendHighlight) {
-    view.DOM.removeAttribute('title');
     sendHighlight.clear();
+    resultWidget.clear();
   }
 });
 
@@ -42,6 +44,16 @@ function highlightSourceLoc(sourceLoc, highlightType) {
   return editor.doc.markText(startPos, endPos, {className: 'highlight-' + highlightType});
 }
 
+function addResultWidget(sourceLoc, resultString) {
+  if (!sourceLoc) {
+    return;
+  }
+  const pos = editor.doc.posFromIndex(sourceLoc.startPos);
+  console.log(pos.ch);
+  return editor.addLineWidget(
+      sourceLoc.endLineNumber - 1,
+      d('pre', {}, spaces(pos.ch) + '⇒ ' + resultString));
+}
 
 let interpreter;
 let R;
@@ -103,14 +115,6 @@ editor.on('changes', function(cmInstance, changes) {
     error.innerText = spaces(pos.ch) + '^\nExpected: ' + expected;
     parseErrorWidget = editor.addLineWidget(pos.line, error);
     $(error).hide().delay(2000).slideDown().queue(() => editor.refresh());
-  }
-
-  function spaces(n) {
-    let str = '';
-    while (n-- > 0) {
-      str += ' ';
-    }
-    return str;
   }
 });
 
