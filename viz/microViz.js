@@ -289,6 +289,9 @@ class LocalEventGroupView extends AbstractView {
     }
     this.lastEventNode = this.mkEventView(event, event.sourceLoc, 'firstInLine');
     this.lastPopulatedLineNumber = event.sourceLoc.endLineNumber;
+    if (this.children.length > 0) {
+      this.DOM.appendChild(d('br'));
+    }
     this.addChild(this.lastEventNode);
   }
 
@@ -306,7 +309,10 @@ class LocalEventGroupView extends AbstractView {
     const spacers =
         range(this.lastChild.startLine, event.sourceLoc.startLineNumber - 1).
         map(lineNumber => new Spacer(this, lineNumber));
-    this.addChild(new Wrapper(this, ...spacers, this.lastEventNode));
+    this.addChild(new Wrapper(this, 
+        ...spacers, 
+        {DOM: d('br')}, 
+        this.lastEventNode));
   }
 
   addOverlappingInsideOut(event) {
@@ -376,6 +382,9 @@ class RemoteEventGroupView extends AbstractView {
   addEvent(event) {
     const eventView = new EventView(this, event, this.sourceLoc, 'remote firstInLine lastInLine');
     this.eventViews.set(event, eventView);
+    if (this.events.length > 0) {
+      this.DOM.appendChild(d('br'));
+    }
     this.DOM.appendChild(eventView.DOM);
     this.microViz.fixHeightsFor(event);
 

@@ -8,6 +8,10 @@ function range(from, to) {
 
 function d(elementType, attributes, ...children) {
   const node = document.createElement(elementType);
+  if (attributes == null && children.length === 0) {
+    return node;
+  }
+
   Object.keys(attributes).forEach(name => node.setAttribute(name, attributes[name]));
   for (let child of children) {
     node.appendChild(typeof child === 'string' ? document.createTextNode(child) : child);

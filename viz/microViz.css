@@ -39,34 +39,44 @@
   padding: 4px 0; /* same as codemirror-lines */
 }
 
-.microViz microVizDiv > program {
-  display: inline-block;
-  float: left;
-}
-
-.microViz microVizDiv > .topLevel {
-  min-width: 1000px;
-}
-
+/* layout stuff */
 /* top-level send, whose sourceloc is always the entire program */
 .microViz microVizDiv > send {
   display: inline-block;
 }
 
 .microViz microVizDiv event,
-/*microVizDiv send,*/
 .microViz microVizDiv localEventGroup,
 .microViz microVizDiv remoteEventGroup,
 .microViz microVizDiv spacer,
 .microViz microVizDiv wrapper {
   display: inline-block;
-  float: left;
 }
 
 .microViz microVizDiv send {
   display: inline-flex;
-  float: left;
 }
+
+.microViz microVizDiv localEventGroup,
+.microViz microVizDiv remoteEventGroup,
+.microViz #microVizDiv wrapper {
+  white-space: nowrap;
+}
+
+.microViz microVizDiv localEventGroup > *,
+.microViz microVizDiv remoteEventGroup > *,
+.microViz microVizDiv wrapper > * {
+  vertical-align: top;
+}
+
+spacer:before { 
+  content: "\A"; 
+  white-space: pre-line;
+}
+
+
+
+/*---*/
 
 .microViz microVizDiv send[loopy="true"] {
   border-radius: 4px;
@@ -120,12 +130,6 @@
   content: ')';
 }
 
-.microViz microVizDiv .firstInLine,
-.microViz microVizDiv spacer,
-.microViz microVizDiv .pushDown {
-  clear: left;
-}
-
 /* only debugging stuff past this point */
 
 /*
@@ -170,8 +174,8 @@
 .microViz microVizDiv > model send,
 .microViz microVizDiv > model event {
   display: inline-block;
-  float: left;
-  clear: left;
+  /*float: left;*/
+  /*clear: left;*/
 }
 
 .microViz microVizDiv > model remoteEventGroup {
