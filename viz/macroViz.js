@@ -60,7 +60,7 @@ class NodeView {
 
   render() {
     this.children = d('children', {});
-    this.label = d('label', {}, d('text', {}, this.event.sourceLoc.name));
+    this.label = d('label', {}, d('text', {}, ''));
     this.DOM = d('macroVizNode', {},
         this.label, this.children);
 

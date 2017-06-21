@@ -16,7 +16,6 @@
 .macroViz macroVizNode > label {
   display: block;
   color: #555;
-  border-radius: 2px;
   box-shadow: 1px 1px 0px hsl(0, 0%, 0%);
   padding: 3px;
   background: hsl(0, 0%, 90%);

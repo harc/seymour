@@ -23,15 +23,22 @@ class MicroViz {
   }
 
   setEnv(env) {
+    if (!env.sourceLoc) {
+      return;
+    }
+
     Object.keys(this.widgetForLine)
       .forEach(line => this.widgetForLine[line].clear());
     this.microVizParent.innerHTML = '';
-
 
     this.clearBackground();
     this.setupBackground();
 
     if (env.callerEnv) {
+      let globalEnv = env.callerEnv;
+      while (globalEnv.callerEnv) {
+        globalEnv = globalEnv.callerEnv;
+      }
       this.microVizEvents = new MicroVizEvents(globalEnv.programOrSendEvent, globalEnv.sourceLoc);
       this.microVizEvents.eventGroups = [new LocalEventGroup(env.microVizEvents)];
     } else {

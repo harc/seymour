@@ -8,6 +8,10 @@ console.debug = function(...args) {
 };
 
 const microViz = new MicroViz(microVizContainer);
+
+const macroViz = new MacroViz(macroVizContainer);
+macroViz.addListener('click', (event, _) => microViz.setEnv(event.activationEnv));
+
 const editor = microViz.editor;
 editor.setOption('lineNumbers', true);
 
@@ -22,6 +26,7 @@ function run(ast, code) {
     }
     Obj.nextId = 0;
     R = new EventRecorder();
+    macroViz.setEventRecorder(R);
     interpreter = new Interpreter(ast.sourceLoc, code, R);
     microViz.setEnv(interpreter.global.env);
   }
