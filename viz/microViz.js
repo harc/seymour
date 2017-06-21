@@ -1,8 +1,13 @@
 "use strict";
 
 // toplevel class. persists across focuses. manages codemirror
-class MicroViz {
+class MicroViz extends CheckedEmitter {
   constructor(container, env = null) {
+    super();
+    this.registerEvent('click', 'event', 'eventView');
+    this.registerEvent('mouseover', 'event', 'eventView');
+    this.registerEvent('mouseout', 'event', 'eventView');
+
     this.microViz = this;
 
     this.container = container;
@@ -27,6 +32,7 @@ class MicroViz {
       return;
     }
 
+    this.eventViews = new Map();
 
     Object.keys(this.widgetForLine)
       .forEach(line => this.widgetForLine[line].clear());
@@ -46,7 +52,7 @@ class MicroViz {
       this.microVizEvents = env.microVizEvents;
     }
 
-    this.topLevelSend = new SendView(this, this.microVizEvents, this.microVizEvents.sourceLoc, '');
+    this.topLevelSend = new SendView(this, true, this.microVizEvents, this.microVizEvents.sourceLoc, '');
     this.microVizParent.appendChild(this.topLevelSend.DOM);
 
     this.tagLines(this.topLevelSend.startLine, this.topLevelSend.endLine);
@@ -135,6 +141,14 @@ class MicroViz {
   fixHeightsFor(item) {
     range(item.startLine, item.endLine).forEach(line => this.fixHeight(line));
   }
+
+  onClick(event) { this.emit('click', event, this.eventViews.get(event)); }
+  onMouseover(event) { this.emit('mouseover', event, this.eventViews.get(event)); }
+  onMouseout(event) { this.emit('mouseout', event, this.eventViews.get(event)); }
+
+  addEventView(event, view) {
+    this.eventViews.set(event, view);
+  }
 }
 
 
@@ -164,15 +178,32 @@ class AbstractView {
 }
 
 class SendView extends AbstractView {
-  constructor(parent, microVizEvents, sourceLoc=microVizEvents.sourceLoc, classes='') {
+  constructor(parent, isImplementation, microVizEvents, sourceLoc=microVizEvents.sourceLoc, classes='') {
     super(parent, sourceLoc, classes);
     this.microVizEvents = microVizEvents;
     this.numGroups = 0;
     this.eventGroups = [];
+    this.isImplementation = isImplementation;
     this.render();
 
     this.microVizEvents.addListener('addEventGroup', eventGroup =>
         this.addEventGroup(eventGroup));
+
+    if (!this.isImplementation) {
+      this.microViz.addEventView(this.microVizEvents.programOrSendEvent, this);
+      this.DOM.onclick = (e) => {
+        this.microViz.onClick(this.microVizEvents.programOrSendEvent);
+        e.stopPropagation();
+      };
+      this.DOM.onmouseover = (e) => {
+        this.microViz.onMouseover(this.microVizEvents.programOrSendEvent);
+        e.stopPropagation();
+      };
+      this.DOM.onmouseout = (e) => {
+        this.microViz.onMouseout(this.microVizEvents.programOrSendEvent);
+        e.stopPropagation();
+      };
+    }
   }
 
   render() {
@@ -289,7 +320,7 @@ class LocalEventGroupView extends AbstractView {
 
   mkEventView(event, sourceLoc, classes = '') {
     if (event instanceof MicroVizEvents) {
-      return new SendView(this, event, sourceLoc, classes);
+      return new SendView(this, false, event, sourceLoc, classes);
     } else {
       return new EventView(this, event, sourceLoc, classes);
     }
@@ -400,6 +431,20 @@ class EventView extends AbstractView {
     super(parent, sourceLoc, classes);
     this.event = event;
     this.render();
+
+    this.microViz.addEventView(this.event, this); // TODO
+    this.DOM.onclick = (e) => {
+      this.microViz.onClick(this.event);
+      e.stopPropagation();
+    };
+    this.DOM.onmouseover = (e) => {
+      this.microViz.onMouseover(this.event);
+      e.stopPropagation();
+    };
+    this.DOM.onmouseout = (e) => {
+      this.microViz.onMouseout(this.event);
+      e.stopPropagation();
+    };
   }
 
   render() {
