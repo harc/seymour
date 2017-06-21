@@ -208,7 +208,9 @@ class SendView extends AbstractView {
 
   render() {
     this.DOM = d('send', this.attributes);
-    this.addEmptySendGroup();
+    if (!this.isImplementation) {
+      this.addEmptySendGroup();
+    }
     this.microVizEvents.eventGroups.forEach(group => this.addEventGroup(group));
   }
 
@@ -220,7 +222,7 @@ class SendView extends AbstractView {
   }
 
   addEventGroup(eventGroup) {
-    if (this.numGroups === 0) {
+    if (this.numGroups === 0 && !this.isImplementation) {
       this.DOM.removeChild(this.DOM.firstChild);
       this.DOM.removeAttribute('empty');
     }
