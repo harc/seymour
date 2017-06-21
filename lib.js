@@ -26,3 +26,7 @@ function spaces(n) {
   }
   return str;
 }
+
+function flatten(arrs) {
+  return [].concat.apply([], arrs);
+}

@@ -287,9 +287,6 @@ class LocalEventGroupView extends AbstractView {
     }
     this.lastEventNode = this.mkEventView(event, event.sourceLoc, 'firstInLine');
     this.lastPopulatedLineNumber = event.sourceLoc.endLineNumber;
-    if (this.children.length > 0) {
-      this.DOM.appendChild(d('br'));
-    }
     this.addChild(this.lastEventNode);
   }
 
@@ -307,9 +304,15 @@ class LocalEventGroupView extends AbstractView {
     const spacers =
         range(this.lastChild.startLine, event.sourceLoc.startLineNumber - 1).
         map(lineNumber => new Spacer(this, lineNumber));
+<<<<<<< dd005d3471150077ff99645bf982c59919528f31
     this.addChild(new Wrapper(this,
         ...spacers,
         {DOM: d('br')},
+=======
+    if (spacers.length > 0) { spacers.push({DOM: d('br')}); }
+    this.addChild(new Wrapper(this, 
+        ...spacers, 
+>>>>>>> Fix bug in microviz
         this.lastEventNode));
   }
 
@@ -333,6 +336,10 @@ class LocalEventGroupView extends AbstractView {
   get lastChild() { return this.children[this.children.length - 1]; }
 
   addChild(view) {
+    if (view.classList.contains('firstInLine') &&
+        this.children.length > 0) {
+      this.DOM.appendChild(d('br'));
+    }
     this.children.push(view);
     this.DOM.appendChild(view.DOM);
     this.microViz.fixHeightsFor(view);
@@ -340,6 +347,10 @@ class LocalEventGroupView extends AbstractView {
 
   popChild() {
     const view = this.children.pop();
+    if (view.classList.contains('firstInLine') && 
+        view.DOM.previousSibling.nodeName === 'BR') {
+      this.DOM.removeChild(view.DOM.previousSibling);
+    }
     this.DOM.removeChild(view.DOM);
     return view;
   }
@@ -429,7 +440,14 @@ class Wrapper extends AbstractView {
   }
 
   render() {
-    this.DOM = d('wrapper', this.attributes, ...this.views.map(v => v.DOM));
+    this.DOM = d('wrapper', this.attributes, 
+        ...flatten(this.views.map((v, idx) => {
+          if (v.classList.contains('firstInLine') && idx > 0) {
+            return [d('br'), v.DOM];
+          } else {
+            return [v.DOM];
+          }
+        })));
   }
 }
 
