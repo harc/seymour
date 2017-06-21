@@ -16,16 +16,21 @@ const editor = microViz.editor;
 editor.setOption('lineNumbers', true);
 
 let sendHighlight = null;
+
 microViz.addListener('mouseover', (event, view) => {
-  if (event instanceof SendEvent && 
-      !view.isImplementation && 
+  if (event instanceof SendEvent &&
+      !view.isImplementation &&
       view.microVizEvents.eventGroups.length === 0) {
+    view.DOM.setAttribute('title', event.toDetailString());
     sendHighlight = highlightSourceLoc(event.sourceLoc, 'emptysend');
   }
 });
 
-microViz.addListener('mouseout', (_, __) => {
-  if (sendHighlight) { sendHighlight.clear(); }
+microViz.addListener('mouseout', (_, view) => {
+  if (sendHighlight) {
+    view.DOM.removeAttribute('title');
+    sendHighlight.clear();
+  }
 });
 
 function highlightSourceLoc(sourceLoc, highlightType) {

@@ -59,6 +59,17 @@ class SendEvent extends Event {
     this.args = args;
     // also: activationEnv, returnValue
   }
+
+  toDetailString() {
+    let s =
+        'receiver: ' + this._valueString(this.recv) + '\n' +
+        'selector: ' + this.selector + '\n' +
+        'arguments: [' + this.args.map(x => this._valueString(x)).join(', ') + ']\n';
+    if (this.hasOwnProperty('returnValue')) {
+      s += '⇒ ' + this._valueString(this.returnValue);
+    }
+    return s;
+  }
 }
 
 class VarDeclEvent extends Event {
