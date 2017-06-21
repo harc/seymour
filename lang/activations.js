@@ -15,6 +15,7 @@ class Activation {
     this.formals = formals;
     this.parent = parent;
     this.caller = caller;
+    this.sourceLoc = sourceLoc;
     this.stack = [];
     this.nextInstruction = code;
   }
