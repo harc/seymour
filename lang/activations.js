@@ -264,9 +264,6 @@ class Activation {
     this.assertStackContainsAtLeastThisManyElements(1);
     const value = this.stack.pop();
     console.debug('(non-local) returning', value, sourceLoc);
-    if (sourceLoc) {
-      this.R.return(sourceLoc, this.env, value);
-    }
     const methodActivation = this.methodActivation;
     let activation = this;
     while (activation !== null) {
@@ -274,6 +271,9 @@ class Activation {
         const caller = methodActivation.caller;
         caller.stack.push(value);
         this.nextInstruction = null;
+        if (sourceLoc) {
+          this.R.nonLocalReturn(sourceLoc, this.env, value);
+        }
         if (caller.hasSourceLoc()) {
           caller.R.receive(caller.env, value);
         }
@@ -415,7 +415,7 @@ class BlockActivation extends Activation {
     const value = this.stack.pop();
     console.debug('returning', value, sourceLoc);
     if (sourceLoc) {
-      this.R.return(sourceLoc, this.env, value);
+      this.R.localReturn(sourceLoc, this.env, value);
     }
     if (this.caller.hasSourceLoc()) {
       this.caller.R.receive(this.caller.env, value);

@@ -117,6 +117,18 @@ class ReturnEvent extends Event {
   }
 
   toMicroVizString() {
+    throw new Error('abstract method');
+  }
+}
+
+class LocalReturnEvent extends ReturnEvent {
+  toMicroVizString() {
+    return '→ ' + this._valueString(this.value);
+  }
+}
+
+class NonLocalReturnEvent extends ReturnEvent {
+  toMicroVizString() {
     return 'return ' + this._valueString(this.value);
   }
 }

@@ -62,8 +62,14 @@ class EventRecorder extends CheckedEmitter {
     event.env.receive(event);
   }
 
-  return(sourceLoc, env, value) {
-    const event = new ReturnEvent(sourceLoc, env, value);
+  localReturn(sourceLoc, env, value) {
+    const event = new LocalReturnEvent(sourceLoc, env, value);
+    this._emit(event);
+    return value;
+  }
+
+  nonLocalReturn(sourceLoc, env, value) {
+    const event = new NonLocalReturnEvent(sourceLoc, env, value);
     this._emit(event);
     return value;
   }
