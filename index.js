@@ -24,14 +24,16 @@ microViz.addListener('mouseover', (event, view) => {
       view.microVizEvents.eventGroups.length === 0) {
     view.DOM.setAttribute('title', event.toDetailString());
     sendHighlight = highlightSourceLoc(event.sourceLoc, 'emptysend');
-    resultWidget = addResultWidget(event.sourceLoc, event._valueString(event.returnValue));
+    resultWidget = addResultWidget(
+        event.sourceLoc,
+        event.hasOwnProperty('returnValue') ? event._valueString(event.returnValue) : '?');
   }
 });
 
 microViz.addListener('mouseout', (_, view) => {
   if (sendHighlight) {
     sendHighlight.clear();
-    resultWidget.clear();
+    $(resultWidget).remove();
   }
 });
 
@@ -50,9 +52,9 @@ function addResultWidget(sourceLoc, resultString) {
   }
   const pos = editor.doc.posFromIndex(sourceLoc.startPos);
   console.log(pos.ch);
-  return editor.addLineWidget(
-      sourceLoc.endLineNumber - 1,
-      d('pre', {}, spaces(pos.ch) + '⇒ ' + resultString));
+  const widget = d('resultWidget', {}, '⇒ ' + resultString);
+  editor.addWidget(pos, widget);
+  return widget;
 }
 
 let interpreter;
