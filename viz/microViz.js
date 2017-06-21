@@ -304,15 +304,9 @@ class LocalEventGroupView extends AbstractView {
     const spacers =
         range(this.lastChild.startLine, event.sourceLoc.startLineNumber - 1).
         map(lineNumber => new Spacer(this, lineNumber));
-<<<<<<< dd005d3471150077ff99645bf982c59919528f31
-    this.addChild(new Wrapper(this,
-        ...spacers,
-        {DOM: d('br')},
-=======
     if (spacers.length > 0) { spacers.push({DOM: d('br')}); }
     this.addChild(new Wrapper(this, 
         ...spacers, 
->>>>>>> Fix bug in microviz
         this.lastEventNode));
   }
 
