@@ -52,8 +52,8 @@ class EventRecorder extends CheckedEmitter {
     return this.mkEnv(sourceLoc);
   }
 
-  leaveScope() {
-    this.receive(null);
+  leaveScope(env) {
+    this.receive(env, null);
   }
 
   _emit(event) {
