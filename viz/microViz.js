@@ -28,10 +28,6 @@ class MicroViz extends CheckedEmitter {
   }
 
   setEnv(env) {
-    if (!env.sourceLoc) {
-      return;
-    }
-
     this.eventViews = new Map();
 
     Object.keys(this.widgetForLine)
@@ -311,9 +307,9 @@ class LocalEventGroupView extends AbstractView {
     const spacers =
         range(this.lastChild.startLine, event.sourceLoc.startLineNumber - 1).
         map(lineNumber => new Spacer(this, lineNumber));
-    this.addChild(new Wrapper(this, 
-        ...spacers, 
-        {DOM: d('br')}, 
+    this.addChild(new Wrapper(this,
+        ...spacers,
+        {DOM: d('br')},
         this.lastEventNode));
   }
 
