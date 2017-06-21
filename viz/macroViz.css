@@ -23,6 +23,10 @@
   margin-bottom: 0px;
 }
 
+.macroViz macroVizNode[isFocusable="false"] > label {
+  background: hsl(0, 0%, 97%);
+}
+
 .macroViz macroVizNode > label:hover {
   background: hsl(0, 0%, 80%);
 }

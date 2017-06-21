@@ -61,7 +61,7 @@ class NodeView {
   render() {
     this.children = d('children', {});
     this.label = d('label', {}, d('text', {}, ''));
-    this.DOM = d('macroVizNode', {},
+    this.DOM = d('macroVizNode', {isFocusable: !!this.event.activationEnv.sourceLoc},
         this.label, this.children);
 
     this.label.onclick = (event) => this.macroViz.onClick(this.event);
