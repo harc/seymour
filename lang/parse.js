@@ -10,7 +10,6 @@ const parse = (function() {
   semantics.addOperation('toAST()', {
 
     Program(declsAndStmts) {
-      programSource = this.sourceString;
       lineNumbers = [];
       let currLineNumber = 1;
       for (let pos = 0; pos < programSource.length; pos++) {
@@ -360,6 +359,7 @@ const parse = (function() {
   function parse(matchResult, optIncludeSourceLocs) {
     includeSourceLocs = arguments.length === 1 ? true : !!optIncludeSourceLocs;
     if (matchResult.succeeded()) {
+      programSource = matchResult.input;
       return semantics(matchResult).toAST();
     } else {
       throw new Error(matchResult.message);

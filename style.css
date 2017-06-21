@@ -30,7 +30,7 @@ parseError {
 }
 
 .highlight-emptysend {
-  background: HSL(217, 96%, 90%);
+  background: hsl(217, 96%, 90%);
 }
 
 resultWidget {
@@ -38,7 +38,7 @@ resultWidget {
   z-index: 2000;
   border-radius: 2pt;
   padding: 0 4pt;
-  margin-left: -4pt;
-  background: hsl(0, 0%, 95%);
+  margin-top: 4px;
+  background: hsl(217, 96%, 95%);
   box-shadow: 1px 1px 2px hsl(0, 0%, 50%);
 }

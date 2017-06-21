@@ -2,6 +2,12 @@
 
 class SourceLoc {
   constructor(startPos, endPos, startLineNumber, endLineNumber) {
+    if (startPos === undefined ||
+        endPos === undefined ||
+        startLineNumber === undefined ||
+        endLineNumber === undefined) {
+      debugger;
+    }
     this.startPos = startPos;
     this.endPos = endPos;
     this.startLineNumber = startLineNumber;
