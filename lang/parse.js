@@ -19,7 +19,9 @@ const parse = (function() {
         }
       }
       lineNumbers[programSource.length] = currLineNumber;
-      return new Seq(this.sourceLoc(), declsAndStmts.toAST());
+      return new Seq(
+          new SourceLoc(0, programSource.length, 1, currLineNumber),
+          declsAndStmts.toAST());
     },
 
     Stmt_varDecl(_var, x, _eq, e, _sc) {
