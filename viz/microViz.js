@@ -217,7 +217,7 @@ class SendView extends AbstractView {
   addEmptySendGroup() {
     this.DOM.setAttribute('empty', true);
     this.DOM.appendChild(
-      d('remoteEventGroup', this.attributes, d('emptySendDot', {}, '▪'))
+      d('remoteEventGroup', {class: 'empty'}, d('emptySendDot', {}, '▪'))
     );
   }
 
