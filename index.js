@@ -9,9 +9,31 @@ console.debug = function(...args) {
 
 const microViz = new MicroViz(microVizContainer);
 
+let pathToSelectedEnv = [];
+let pathToSelectedEnvIdx = 0;
+let envAtPathIdx = null;
+
+function getPath(activationEnv) {
+  const path = [];
+  while (true) {
+    const callerEnv = activationEnv.callerEnv;
+    if (callerEnv) {
+      path.push(activationEnv.programOrSendEvent.activationPathToken);
+      activationEnv = callerEnv.programOrSendEvent.activationEnv;
+    } else {
+      break;
+    }
+  }
+  path.reverse();
+  return path;
+}
+
 const macroViz = new MacroViz(macroVizContainer);
 macroViz.addListener('click', (event, _) => {
   if (event.activationEnv.sourceLoc) {
+    pathToSelectedEnv = getPath(event.activationEnv);
+    pathToSelectedEnvIdx = pathToSelectedEnv.length;
+    envAtPathIdx = event.activationEnv;
     microViz.setEnv(event.activationEnv);
   }
 });
@@ -72,9 +94,22 @@ function run(ast, code) {
     }
     Obj.nextId = 0;
     R = new EventRecorder();
+    R.addListener('addChild', (child, parent) => {
+      if (pathToSelectedEnvIdx < pathToSelectedEnv.length &&
+          envAtPathIdx === parent.activationEnv &&
+          child.activationPathToken === pathToSelectedEnv[pathToSelectedEnvIdx]) {
+        pathToSelectedEnvIdx++;
+        envAtPathIdx = child.activationEnv;
+        if (pathToSelectedEnvIdx === pathToSelectedEnv.length) {
+          microViz.setEnv(envAtPathIdx);
+        }
+      }
+    });
     macroViz.setEventRecorder(R);
     interpreter = new Interpreter(ast.sourceLoc, code, R);
     microViz.setEnv(interpreter.global.env);
+    pathToSelectedEnvIdx = 0;
+    envAtPathIdx = interpreter.global.env;
   }
 
   const done = interpreter.runForMillis(30);

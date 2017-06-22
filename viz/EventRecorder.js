@@ -15,8 +15,8 @@ class EventRecorder extends CheckedEmitter {
     return env;
   }
 
-  send(sourceLoc, env, recv, selector, args) {
-    const event = new SendEvent(sourceLoc, env, recv, selector, args);
+  send(sourceLoc, env, recv, selector, args, activationPathToken) {
+    const event = new SendEvent(sourceLoc, env, recv, selector, args, activationPathToken);
     env.currentSendEvent = event;
     this.currentProgramOrSendEvent = event;
     // this event is only sent to event handler after it gets an activation environment (see below)
