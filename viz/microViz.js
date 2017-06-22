@@ -14,17 +14,21 @@ class MicroViz extends CheckedEmitter {
     this.editor = CodeMirror(container);
     this.widgetForLine = {};
 
+    this.render();
+
+    if (env !== null) {
+      this.setEnv(env);
+    }
+  }
+
+  render() {
     this.microVizParent = d('microVizDiv', {});
     this.background = d('microVizBackground', {});
     this.microVizHolder = d('microVizHolder', {},
         this.background,
         this.microVizParent);
-    container.appendChild(this.microVizHolder);
-    container.classList.add('microViz');
-
-    if (env !== null) {
-      this.setEnv(env);
-    }
+    this.container.appendChild(this.microVizHolder);
+    this.container.classList.add('microViz');
   }
 
   setEnv(env) {
@@ -37,18 +41,19 @@ class MicroViz extends CheckedEmitter {
     this.clearBackground();
     this.setupBackground();
 
+    // TODO: replace this with stack of impls approach
     if (env.callerEnv) {
       let globalEnv = env.callerEnv;
       while (globalEnv.callerEnv) {
         globalEnv = globalEnv.callerEnv;
       }
-      this.microVizEvents = new MicroVizEvents(globalEnv.programOrSendEvent, globalEnv.sourceLoc);
+      this.microVizEvents = new MicroVizEvents(globalEnv.programOrSendEvent, true, globalEnv.sourceLoc);
       this.microVizEvents.eventGroups = [new LocalEventGroup(env.microVizEvents)];
     } else {
       this.microVizEvents = env.microVizEvents;
     }
 
-    this.topLevelSend = new SendView(this, true, this.microVizEvents, this.microVizEvents.sourceLoc, '');
+    this.topLevelSend = new SendView(this, this.microVizEvents, this.microVizEvents.sourceLoc, '');
     this.microVizParent.appendChild(this.topLevelSend.DOM);
 
     this.tagLines(this.topLevelSend.startLine, this.topLevelSend.endLine);
@@ -174,12 +179,11 @@ class AbstractView {
 }
 
 class SendView extends AbstractView {
-  constructor(parent, isImplementation, microVizEvents, sourceLoc=microVizEvents.sourceLoc, classes='') {
+  constructor(parent, microVizEvents, sourceLoc=microVizEvents.sourceLoc, classes='') {
     super(parent, sourceLoc, classes);
     this.microVizEvents = microVizEvents;
     this.numGroups = 0;
     this.eventGroups = [];
-    this.isImplementation = isImplementation;
     this.render();
 
     this.microVizEvents.addListener('addEventGroup', eventGroup =>
@@ -201,6 +205,8 @@ class SendView extends AbstractView {
       };
     }
   }
+
+  get isImplementation() { return this.microVizEvents.isImplementation; }
 
   render() {
     this.DOM = d('send', this.attributes);
@@ -276,7 +282,6 @@ class LocalEventGroupView extends AbstractView {
       throw new Error('impossible!');
     }
     this.addEndSpacers();
-    if (window.debug === true) debugger;
   }
 
   addFirstInLine(event) {
@@ -301,13 +306,13 @@ class LocalEventGroupView extends AbstractView {
     this.lastEventNode = this.mkEventView(event, event.sourceLoc, 'pushDown');
     this.lastPopulatedLineNumber =
         Math.max(this.lastPopulatedLineNumber, event.sourceLoc.endLineNumber);
+
     const spacers =
         range(this.lastChild.startLine, event.sourceLoc.startLineNumber - 1).
         map(lineNumber => new Spacer(this, lineNumber));
     if (spacers.length > 0) { spacers.push({DOM: d('br')}); }
-    this.addChild(new Wrapper(this, 
-        ...spacers, 
-        this.lastEventNode));
+
+    this.addChild(new Wrapper(this, ...spacers, this.lastEventNode));
   }
 
   addOverlappingInsideOut(event) {
@@ -321,7 +326,7 @@ class LocalEventGroupView extends AbstractView {
 
   mkEventView(event, sourceLoc, classes = '') {
     if (event instanceof MicroVizEvents) {
-      return new SendView(this, false, event, sourceLoc, classes);
+      return new SendView(this, event, sourceLoc, classes);
     } else {
       return new EventView(this, event, sourceLoc, classes);
     }
@@ -392,7 +397,6 @@ class RemoteEventGroupView extends AbstractView {
     this.microViz.fixHeightsFor(this);
 
     this.events.push(eventView);
-    if (window.debug === true) debugger;
   }
 
   removeEvent(event) {
@@ -451,7 +455,7 @@ class EventView extends AbstractView {
     this.event = event;
     this.render();
 
-    this.microViz.addEventView(this.event, this); // TODO
+    this.microViz.addEventView(this.event, this);
     this.DOM.onclick = (e) => {
       this.microViz.onClick(this.event);
       e.stopPropagation();

@@ -7,7 +7,7 @@ class Env {
     this.callerEnv = callerEnv;
     this.programOrSendEvent = programOrSendEvent;
     this.currentSendEvent = null;
-    this.microVizEvents = new MicroVizEvents(programOrSendEvent, sourceLoc);
+    this.microVizEvents = new MicroVizEvents(programOrSendEvent, true, sourceLoc);
     this.programOrSendEventToMicroVizEvents = new Map([[programOrSendEvent, this.microVizEvents]]);
   }
 
@@ -25,7 +25,7 @@ class Env {
     }
     const microVizEvents = this.programOrSendEventToMicroVizEvents.get(programOrSendEvent);
     if (event instanceof SendEvent) {
-      const newMicroVizEvents = new MicroVizEvents(event, event.sourceLoc);
+      const newMicroVizEvents = new MicroVizEvents(event, false, event.sourceLoc);
       this.programOrSendEventToMicroVizEvents.set(event, newMicroVizEvents);
       microVizEvents.add(newMicroVizEvents);
     } else {

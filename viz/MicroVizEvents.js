@@ -1,11 +1,12 @@
 "use strict";
 
 class MicroVizEvents extends CheckedEmitter {
-  constructor(programOrSendEvent, sourceLoc) {
+  constructor(programOrSendEvent, isImplementation, sourceLoc) {
     super();
     this.registerEvent('addEventGroup', 'eventGroup');
 
     this.programOrSendEvent = programOrSendEvent;
+    this.isImplementation = isImplementation;
     this.sourceLoc = sourceLoc;
     this.eventGroups = [];
   }
