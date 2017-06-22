@@ -38,6 +38,23 @@ macroViz.addListener('click', (event, _) => {
   }
 });
 
+let defMarker = null;
+let refMarker = null;
+macroViz.addListener('mouseover', (event, _) => {
+  if (event instanceof SendEvent) {
+    defMarker = highlightSourceLoc(event.activationEnv.sourceLoc, 'def');
+  }
+  refMarker = highlightSourceLoc(event.sourceLoc, 'ref');
+});
+macroViz.addListener('mouseout', (event, _) => {
+  if (refMarker) {
+    refMarker.clear();
+  }
+  if (defMarker) {
+    defMarker.clear();
+  }
+});
+
 const editor = microViz.editor;
 editor.setOption('lineNumbers', true);
 

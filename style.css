@@ -38,6 +38,19 @@ parseError {
   background: hsl(217, 96%, 90%);
 }
 
+.highlight-def {
+  background-color: hsl(219, 85%, 97%);
+}
+
+.highlight-ref {
+  background-color: hsl(219, 79%, 90%);
+}
+
+.highlight-def,
+.highlight-ref {
+  box-shadow: 1px 1px 0px 0px #aaa;
+}
+
 resultWidget {
   display: block;
   z-index: 2000;
