@@ -10,7 +10,11 @@ console.debug = function(...args) {
 const microViz = new MicroViz(microVizContainer);
 
 const macroViz = new MacroViz(macroVizContainer);
-macroViz.addListener('click', (event, _) => microViz.setEnv(event.activationEnv));
+macroViz.addListener('click', (event, _) => {
+  if (event.activationEnv.sourceLoc) {
+    microViz.setEnv(event.activationEnv);
+  }
+});
 
 const editor = microViz.editor;
 editor.setOption('lineNumbers', true);
@@ -50,10 +54,10 @@ function addResultWidget(sourceLoc, resultString) {
   if (!sourceLoc) {
     return;
   }
-  const pos = editor.doc.posFromIndex(sourceLoc.startPos);
-  console.log(pos.ch);
+  const startPos = editor.doc.posFromIndex(sourceLoc.startPos);
+  const endPos = editor.doc.posFromIndex(sourceLoc.endPos);
   const widget = d('resultWidget', {}, '⇒ ' + resultString);
-  editor.addWidget(pos, widget);
+  editor.addWidget({line: endPos.line, ch: startPos.ch}, widget);
   return widget;
 }
 
