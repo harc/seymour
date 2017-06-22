@@ -51,11 +51,12 @@ class ProgramEvent extends Event {
 }
 
 class SendEvent extends Event {
-  constructor(sourceLoc, env, recv, selector, args) {
+  constructor(sourceLoc, env, recv, selector, args, activationPathToken) {
     super(sourceLoc, env);
     this.recv = recv;
     this.selector = selector;
     this.args = args;
+    this.activationPathToken = activationPathToken;
     // also: activationEnv, returnValue
   }
 
