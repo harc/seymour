@@ -45,9 +45,7 @@ let sendHighlight = null;
 let resultWidget = null;
 
 microViz.addListener('mouseover', (event, view) => {
-  if (event instanceof SendEvent &&
-      !view.isImplementation &&
-      view.microVizEvents.eventGroups.length === 0) {
+  if (event instanceof SendEvent && !view.isImplementation) {
     view.DOM.setAttribute('title', event.toDetailString());
     sendHighlight = highlightSourceLoc(event.sourceLoc, 'emptysend');
     resultWidget = addResultWidget(
