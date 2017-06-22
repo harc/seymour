@@ -15,7 +15,7 @@
 
 .microViz .CodeMirror-code > div:nth-child(even){
   background: hsl(0, 0%, 98%);
-} 
+}
 /*-------------------------------*/
 
 .microViz {
@@ -69,8 +69,8 @@
   vertical-align: top;
 }
 
-spacer:before { 
-  content: "\A"; 
+spacer:before {
+  content: "\A";
   white-space: pre-line;
 }
 
@@ -86,7 +86,7 @@ spacer:before {
 }
 
 .microViz microVizDiv send[empty="true"] > remoteEventGroup > emptySendDot {
-  color: hsl(0, 0%, 30%);
+  color: hsl(219, 79%, 66%);
 }
 
 .microViz microVizDiv event {
