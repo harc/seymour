@@ -10,7 +10,11 @@ console.debug = function(...args) {
 const microViz = new MicroViz(microVizContainer);
 
 const macroViz = new MacroViz(macroVizContainer);
-macroViz.addListener('click', (event, _) => microViz.setEnv(event.activationEnv));
+macroViz.addListener('click', (event, _) => {
+  if (event.activationEnv.sourceLoc) {
+    microViz.setEnv(event.activationEnv);
+  }
+});
 
 const editor = microViz.editor;
 editor.setOption('lineNumbers', true);
