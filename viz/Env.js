@@ -12,9 +12,19 @@ class Env {
   }
 
   receive(event) {
-    this.maybeAdd(event);
-    if (this.callerEnv && this.shouldBubbleUp(event)) {
-      this.callerEnv.receive(event);
+    let env = this;
+    let visitedDeclEnv = false;
+    while (env) {
+      if (env.sourceLoc && event.sourceLoc &&
+          (env.sourceLoc.contains(event.sourceLoc) ||
+           event instanceof VarAssignmentEvent && !visitedDeclEnv)) {
+        env.maybeAdd(event);
+      }
+      if (event instanceof VarAssignmentEvent &&
+          env === event.declEnv) {
+        visitedDeclEnv = true;
+      }
+      env = env.callerEnv;
     }
   }
 
