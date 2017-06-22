@@ -389,7 +389,7 @@ class RemoteEventGroupView extends AbstractView {
       this.DOM.appendChild(d('br'));
     }
     this.DOM.appendChild(eventView.DOM);
-    this.microViz.fixHeightsFor(event);
+    this.microViz.fixHeightsFor(this);
 
     this.events.push(eventView);
     if (window.debug === true) debugger;
