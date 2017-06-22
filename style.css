@@ -2,10 +2,15 @@ body {
   margin: 0;
 }
 
+#topHalf {
+  height: 50vh;
+  width: 100vw;
+  overflow-y: auto;
+  border-bottom: 1px solid #ddd;
+}
+
 #microVizContainer {
   padding: 0;
-  border-bottom: 1px solid #ddd;
-  height: 50vh;
   width: 100vw;
 }
 
