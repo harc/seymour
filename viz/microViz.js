@@ -386,7 +386,7 @@ class LocalEventGroupView extends AbstractView {
 
     const childAfter = childBefore ? childBefore.nextSibling : this.DOM.firstChild;
     const parentWrapper = new Wrapper(this, ...nodesToWrap);
-    if (parentWrapper.classes.includes('firstInLine')) {
+    if (parentWrapper.classes.includes('firstInLine') || implView.startLine > 1) {
       this.DOM.insertBefore(d('br'), childAfter);
     }
     this.DOM.insertBefore(parentWrapper.DOM, childAfter);
