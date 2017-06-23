@@ -96,6 +96,10 @@ spacer:before {
   margin: 0;
 }
 
+.microViz microvizDiv > send {
+  border-left: none !important;
+}
+
 .microViz microVizDiv send[isImplementation="true"] {
   border-left: 3px double black;
 }
