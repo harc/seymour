@@ -47,13 +47,12 @@ class MicroViz extends CheckedEmitter {
     this.clearBackground();
     this.setupBackground();
 
-    console.assert(this.currentPath.env !== null);
-    const microVizEvents = this.currentPath.env.microVizEvents;
-    this.topLevelImpl = new SendView(this, microVizEvents);
-    this.microVizParent.appendChild(this.topLevelImpl.DOM);
+    // console.assert(this.currentPath.env !== null);
+    // const microVizEvents = this.currentPath.env.microVizEvents;
+    // this.topLevelImpl = new SendView(this, microVizEvents);
+    // this.microVizParent.appendChild(this.topLevelImpl.DOM);
 
-    this.tagLines(this.topLevelImpl.startLine, this.topLevelImpl.endLine);
-    this.fixHeightsFor(this.topLevelImpl);
+    
   }
 
   setImplementation(sendView) {
@@ -62,14 +61,20 @@ class MicroViz extends CheckedEmitter {
   }
 
   addImplementation(microVizEvents) {
-    const implMicroVizEvents = 
-        microVizEvents.programOrSendEvent.activationEnv.microVizEvents;
+    const implMicroVizEvents = microVizEvents;
 
     const parentPath = this.paths[this.currentPathIdx - 1];
-    const parentView = this.implementations.get(parentPath);
+    const parentView = this.implementations.get(parentPath) || null;
 
-    const implView = new SendView(parentView, implMicroVizEvents);
-    parentView.addImplementation(implView);
+    if (parentView) {
+      const implView = new SendView(parentView, implMicroVizEvents);
+      parentView.addImplementation(implView);
+    } else {
+      const implView = new SendView(this, implMicroVizEvents);
+      this.microVizParent.appendChild(implView.DOM);
+      this.tagLines(implView.startLine, implView.endLine);
+      this.fixHeightsFor(implView);
+    }
   }
 
   clearBackground() {
@@ -409,10 +414,10 @@ class LocalEventGroupView extends AbstractView {
 
   mkEventView(event, sourceLoc, classes = '') {
     if (event instanceof MicroVizEvents) {
-      if (this.microViz.currentPath &&
-          event.programOrSendEvent.activationEnv === this.microViz.currentPath.env) {
-        this.microViz.addImplementation(event);
-      }
+      // if (this.microViz.currentPath &&
+      //     event.programOrSendEvent.activationEnv === this.microViz.currentPath.env) {
+      //   this.microViz.addImplementation(event);
+      // }
       return new SendView(this, event, sourceLoc, classes);
     } else {
       return new EventView(this, event, sourceLoc, classes);

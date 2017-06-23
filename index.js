@@ -72,6 +72,7 @@ function focusEvent(event) {
   if (event.activationEnv.sourceLoc) {
     pathMatchers = getPathMatchers(event.activationEnv);
     microViz.setPaths(pathMatchers);
+    pathMatchers.forEach(path => microViz.addImplementation(path.env.microVizEvents));
 
     macroViz.events.forEach(e => {
       const nodeView = macroViz.getNodeView(e);
@@ -263,9 +264,13 @@ function run(ast, code) {
           return;
         }
         pathMatcher.processEvent(child, parent);
+        if (pathMatcher.env) {
+          microViz.addImplementation(pathMatcher.env.microVizEvents);
+        }
       });
     });
     microViz.setPaths(pathMatchers);
+    microViz.addImplementation(pathMatchers[0].env.microVizEvents);
   }
 
   let done;
