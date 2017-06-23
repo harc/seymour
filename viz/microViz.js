@@ -371,7 +371,8 @@ class LocalEventGroupView extends AbstractView {
   addImplementation(implView) {
     // pick out nodes on implview's extent
     const nodesToWrap = this.children.filter(child => 
-        implView.startLine <= child.startLine && child.endLine <= implView.endLine);
+        !(child.startLine <= implView.startLine  && child.endLine <= implView.startLine) &&
+        !(child.startLine >= implView.endLine  && child.endLine >= implView.endLine));
     const startSpliceIdx = this.children.indexOf(nodesToWrap[0]);
     const childBefore = this.children[startSpliceIdx - 1] && this.children[startSpliceIdx - 1].DOM;
     
@@ -384,15 +385,24 @@ class LocalEventGroupView extends AbstractView {
     });
 
     const childAfter = childBefore ? childBefore.nextSibling : this.DOM.firstChild;
-    const wrapper = new Wrapper(this, ...nodesToWrap);
-    if (wrapper.classes.includes('firstInLine')) {
+    const parentWrapper = new Wrapper(this, ...nodesToWrap);
+    if (parentWrapper.classes.includes('firstInLine')) {
       this.DOM.insertBefore(d('br'), childAfter);
     }
-    this.DOM.insertBefore(wrapper.DOM, childAfter);
-    this.DOM.insertBefore(implView.DOM, childAfter);
-    this.children.splice(startSpliceIdx, nodesToWrap.length, wrapper, implView);
+    this.DOM.insertBefore(parentWrapper.DOM, childAfter);
 
-    this.microViz.fixHeightsFor(implView);
+
+    implView.classList.add('firstInLine'); // TODO: put this in a nicer place
+    const startLine = nodesToWrap[0].startLine;
+    const childNodes = [];
+    range(startLine, implView.startLine - 1)
+        .forEach(lineNumber => childNodes.push(new Spacer(this, lineNumber)));
+    childNodes.push(implView);
+    const childWrapper = new Wrapper(this, ...childNodes);
+    this.DOM.insertBefore(childWrapper.DOM, childAfter);
+
+    this.children.splice(startSpliceIdx, nodesToWrap.length, parentWrapper, childWrapper);
+    this.microViz.fixHeightsFor(childWrapper);
   } 
 
   // UTILS
