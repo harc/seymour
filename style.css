@@ -79,6 +79,10 @@ macroVizNode.highlight-cursorOnSelector > label {
   background-color: hsl(57, 72%, 78%) !important;
 }
 
+macroVizNode.highlight-focused > label {
+  background-color: hsl(57, 90%, 60%) !important;
+}
+
 resultWidget {
   display: block;
   z-index: 2000;

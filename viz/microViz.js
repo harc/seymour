@@ -371,8 +371,8 @@ class LocalEventGroupView extends AbstractView {
   addImplementation(implView) {
     // pick out nodes on implview's extent
     const nodesToWrap = this.children.filter(child => 
-        !(child.startLine <= implView.startLine  && child.endLine <= implView.startLine) &&
-        !(child.startLine >= implView.endLine  && child.endLine >= implView.endLine));
+        !(child.startLine < implView.startLine  && child.endLine < implView.startLine) &&
+        !(child.startLine > implView.endLine  && child.endLine > implView.endLine));
     const startSpliceIdx = this.children.indexOf(nodesToWrap[0]);
     const childBefore = this.children[startSpliceIdx - 1] && this.children[startSpliceIdx - 1].DOM;
     

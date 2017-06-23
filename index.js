@@ -72,6 +72,15 @@ function focusEvent(event) {
   if (event.activationEnv.sourceLoc) {
     pathMatchers = getPathMatchers(event.activationEnv);
     microViz.setPaths(pathMatchers);
+
+    macroViz.events.forEach(e => {
+      const nodeView = macroViz.getNodeView(e);
+      if (pathMatchers.some(path => path.env === e.activationEnv)) {
+        nodeView.DOM.classList.add('highlight-focused');
+      } else {
+        nodeView.DOM.classList.remove('highlight-focused');
+      }
+    });
   }
 }
 
