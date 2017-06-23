@@ -365,7 +365,7 @@ class LocalEventGroupView extends AbstractView {
     const nodesToWrap = this.children.filter(child => 
         implView.startLine <= child.startLine && child.endLine <= implView.endLine);
     const startSpliceIdx = this.children.indexOf(nodesToWrap[0]);
-    const childBefore = this.children[startSpliceIdx - 1];
+    const childBefore = this.children[startSpliceIdx - 1] && this.children[startSpliceIdx - 1].DOM;
     
     // remove those nodes
     nodesToWrap.forEach(node => {
@@ -383,6 +383,8 @@ class LocalEventGroupView extends AbstractView {
     this.DOM.insertBefore(wrapper.DOM, childAfter);
     this.DOM.insertBefore(implView.DOM, childAfter);
     this.children.splice(startSpliceIdx, nodesToWrap.length, wrapper, implView);
+
+    this.microViz.fixHeightsFor(implView);
   } 
 
   // UTILS
