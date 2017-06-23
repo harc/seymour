@@ -17,6 +17,10 @@ class Event {
       return '{function}';
     } else if (v === undefined) {
       return 'undefined';
+    } else if (v === Infinity) {
+      return '∞';
+    } else if (v === -Infinity) {
+      return '-∞';
     } else if (v instanceof Obj) {
       return v.id < Event.objectIdEmojis.length ? Event.objectIdEmojis[v.id] : '#' + v.id;
     } else {
