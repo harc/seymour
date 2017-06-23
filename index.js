@@ -35,7 +35,7 @@ class PathMatcher {
   }
 }
 
-let pathMatcher = new PathMatcher([]);
+let pathMatchers = null;
 
 function getPathMatchers(activationEnv) {
   const pathMatchers = [];
@@ -71,10 +71,8 @@ function getPath(activationEnv) {
 const macroViz = new MacroViz(macroVizContainer);
 macroViz.addListener('click', (event, _) => {
   if (event.activationEnv.sourceLoc) {
-    const pathMatchers = getPathMatchers(event.activationEnv);
-    console.log(pathMatchers);
-    pathMatcher = getPathMatcher(event.activationEnv);
-    microViz.setEnv(event.activationEnv);
+    pathMatchers = getPathMatchers(event.activationEnv);
+    microViz.setPaths(pathMatchers);
   }
 });
 
@@ -219,18 +217,21 @@ function run(ast, code) {
     R = new EventRecorder();
     macroViz.setEventRecorder(R);
     interpreter = new Interpreter(ast.sourceLoc, code, R);
-    pathMatcher.reset(interpreter.global.env);
+    if (pathMatchers === null) {
+      pathMatchers = getPathMatchers(interpreter.global.env);
+    }
+    pathMatchers.forEach(pathMatcher => pathMatcher.reset(interpreter.global.env));
+
     R.addListener('addChild', (child, parent) => {
-      if (pathMatcher.env) {
-        // nothing to do
-        return;
-      }
-      pathMatcher.processEvent(child, parent);
-      if (pathMatcher.env) {
-        microViz.setEnv(pathMatcher.env);
-      }
+      pathMatchers.forEach(pathMatcher => {
+        if (pathMatcher.env) {
+          // nothing to do
+          return;
+        }
+        pathMatcher.processEvent(child, parent);
+      });
     });
-    microViz.setEnv(interpreter.global.env);
+    microViz.setPaths(pathMatchers);
   }
 
   let done;

@@ -31,8 +31,14 @@ class MicroViz extends CheckedEmitter {
     this.container.classList.add('microViz');
   }
 
-  setEnv(env) {
+  get currentPath() { return this.paths[this.currentPathIdx]; }
+
+  setPaths(paths) {
     this.eventViews = new Map();
+    this.implementations = new Map();
+
+    this.paths = paths;
+    this.currentPathIdx = 0;
 
     Object.keys(this.widgetForLine)
       .forEach(line => this.widgetForLine[line].clear());
@@ -41,24 +47,29 @@ class MicroViz extends CheckedEmitter {
     this.clearBackground();
     this.setupBackground();
 
-    // TODO: replace this with stack of impls approach
-    if (env.callerEnv) {
-      let globalEnv = env.callerEnv;
-      while (globalEnv.callerEnv) {
-        globalEnv = globalEnv.callerEnv;
-      }
-      this.microVizEvents = new MicroVizEvents(globalEnv.programOrSendEvent, true, globalEnv.sourceLoc);
-      this.microVizEvents.eventGroups = [new LocalEventGroup(env.microVizEvents)];
-    } else {
-      this.microVizEvents = env.microVizEvents;
-    }
+    console.assert(this.currentPath.env !== null);
+    const microVizEvents = this.currentPath.env.microVizEvents;
+    this.topLevelImpl = new SendView(this, microVizEvents);
+    this.microVizParent.appendChild(this.topLevelImpl.DOM);
 
-    this.topLevelSend = new SendView(this, this.microVizEvents, this.microVizEvents.sourceLoc, '');
-    this.microVizParent.appendChild(this.topLevelSend.DOM);
+    this.tagLines(this.topLevelImpl.startLine, this.topLevelImpl.endLine);
+    this.fixHeightsFor(this.topLevelImpl);
+  }
 
-    this.tagLines(this.topLevelSend.startLine, this.topLevelSend.endLine);
-    range(this.topLevelSend.startLine, this.topLevelSend.endLine)
-      .forEach(line => this.fixHeight(line));
+  setImplementation(sendView) {
+    this.implementations.set(this.currentPath, sendView);
+    this.currentPathIdx++;
+  }
+
+  addImplementation(microVizEvents) {
+    const implMicroVizEvents = 
+        microVizEvents.programOrSendEvent.activationEnv.microVizEvents;
+
+    const parentPath = this.paths[this.currentPathIdx - 1];
+    const parentView = this.implementations.get(parentPath);
+
+    const implView = new SendView(parentView, implMicroVizEvents);
+    parentView.addImplementation(implView);
   }
 
   clearBackground() {
@@ -140,7 +151,7 @@ class MicroViz extends CheckedEmitter {
   }
 
   fixHeightsFor(item) {
-    range(item.startLine, item.endLine).forEach(line => this.fixHeight(line));
+    item.extent.forEach(line => this.fixHeight(line));
   }
 
   onClick(event) { this.emit('click', event, this.eventViews.get(event)); }
@@ -171,19 +182,27 @@ class AbstractView {
   }
 
   render() {
-    throw new Error(`render hasn't been implemented yet!`);
+    this.DOM._model = this.model;
   }
 
   get startLine() { return this.attributes.startLine; }
   get endLine() { return this.attributes.endLine; }
+  get extent() { return range(this.startLine, this.endLine); }
 }
 
 class SendView extends AbstractView {
   constructor(parent, microVizEvents, sourceLoc=microVizEvents.sourceLoc, classes='') {
     super(parent, sourceLoc, classes);
     this.microVizEvents = microVizEvents;
+    this.attributes.isImplementation = this.isImplementation;
+    this.model = microVizEvents;
     this.numGroups = 0;
     this.eventGroups = [];
+
+    if (this.microVizEvents.isImplementation) {
+      this.microViz.setImplementation(this);
+    }
+
     this.render();
 
     this.microVizEvents.addListener('addEventGroup', eventGroup =>
@@ -214,6 +233,16 @@ class SendView extends AbstractView {
       this.addEmptySendGroup();
     }
     this.microVizEvents.eventGroups.forEach(group => this.addEventGroup(group));
+    super.render();
+  }
+
+  addImplementation(implView) {
+    if (!this.isImplementation) {
+      throw new Error('tried to add an implementation to a non-implementation');
+    }
+
+    console.assert(this.numGroups === 1, 'implementation must have 1 event group');
+    this.eventGroups[0].addImplementation(implView); 
   }
 
   addEmptySendGroup() {
@@ -244,7 +273,7 @@ class SendView extends AbstractView {
     }
 
     this.DOM.appendChild(eventGroupView.DOM);
-    this.eventGroups.push(eventGroupView);
+    // this.eventGroups.push(eventGroupView);
   }
 }
 
@@ -252,10 +281,14 @@ class LocalEventGroupView extends AbstractView {
   constructor(parent, localEventGroup, sourceLoc=localEventGroup.sourceLoc, classes='') {
     super(parent, sourceLoc, classes);
     this.localEventGroup = localEventGroup;
+    this.model = localEventGroup;
     this.lastPopulatedLineNumber = sourceLoc.startLineNumber - 1;
     this.lastEventNode = null;
     this.children = [];
     this.endSpacers = [];
+
+    this.parent.eventGroups.push(this);
+
     this.render();
 
     this.localEventGroup.addListener('addEvent', event => {
@@ -266,7 +299,10 @@ class LocalEventGroupView extends AbstractView {
   render() {
     this.DOM = d('localEventGroup', this.attributes);
     this.localEventGroup.events.forEach(event => this.addEvent(event));
+    super.render();
   }
+
+  // MAIN ADDEVENT LOGIC
 
   addEvent(event) {
     this.clearEndSpacers(); // We can reuse the spacers
@@ -324,8 +360,39 @@ class LocalEventGroupView extends AbstractView {
     this.addOverlappingPushDown(event);
   }
 
+  addImplementation(implView) {
+    // pick out nodes on implview's extent
+    const nodesToWrap = this.children.filter(child => 
+        implView.startLine <= child.startLine && child.endLine <= implView.endLine);
+    const startSpliceIdx = this.children.indexOf(nodesToWrap[0]);
+    const childBefore = this.children[startSpliceIdx - 1];
+    
+    // remove those nodes
+    nodesToWrap.forEach(node => {
+      if (node.classes.includes('firstInLine')) {
+        this.DOM.removeChild(node.DOM.previousSibling);
+      }
+      this.DOM.removeChild(node.DOM);
+    });
+
+    const childAfter = childBefore ? childBefore.nextSibling : this.DOM.firstChild;
+    const wrapper = new Wrapper(this, ...nodesToWrap);
+    if (wrapper.classes.includes('firstInLine')) {
+      this.DOM.insertBefore(d('br'), childAfter);
+    }
+    this.DOM.insertBefore(wrapper.DOM, childAfter);
+    this.DOM.insertBefore(implView.DOM, childAfter);
+    this.children.splice(startSpliceIdx, nodesToWrap.length, wrapper, implView);
+  } 
+
+  // UTILS
+
   mkEventView(event, sourceLoc, classes = '') {
     if (event instanceof MicroVizEvents) {
+      if (this.microViz.currentPath &&
+          event.programOrSendEvent.activationEnv === this.microViz.currentPath.env) {
+        this.microViz.addImplementation(event);
+      }
       return new SendView(this, event, sourceLoc, classes);
     } else {
       return new EventView(this, event, sourceLoc, classes);
@@ -374,8 +441,12 @@ class RemoteEventGroupView extends AbstractView {
   constructor(parent, remoteEventGroup, sourceLoc=remoteEventGroup.sourceLoc, classes='') {
     super(parent, sourceLoc, classes);
     this.remoteEventGroup = remoteEventGroup;
+    this.model = remoteEventGroup;
     this.eventViews = new WeakMap();
     this.events = [];
+
+    this.parent.eventGroups.push(this);
+
     this.render();
 
     this.remoteEventGroup.addListener('addEvent', event => this.addEvent(event));
@@ -385,6 +456,7 @@ class RemoteEventGroupView extends AbstractView {
   render() {
     this.DOM = d('remoteEventGroup', this.attributes);
     this.remoteEventGroup.events.forEach(event => this.addEvent(event));
+    super.render();
   }
 
   addEvent(event) {
@@ -453,6 +525,7 @@ class EventView extends AbstractView {
   constructor(parent, event, sourceLoc=event.sourceLoc, classes='') {
     super(parent, sourceLoc, classes);
     this.event = event;
+    this.model = event;
     this.render();
 
     this.microViz.addEventView(this.event, this);
@@ -472,5 +545,6 @@ class EventView extends AbstractView {
 
   render() {
     this.DOM = d('event', this.attributes, this.event.toMicroVizString());
+    super.render();
   }
 }

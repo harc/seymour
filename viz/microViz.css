@@ -96,6 +96,10 @@ spacer:before {
   margin: 0;
 }
 
+.microViz microVizDiv send[isImplementation="true"] {
+  border-left: 3px double black;
+}
+
 .microViz microVizDiv send[empty="true"].firstInLine {
   margin-left: 10px;
 }
