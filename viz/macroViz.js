@@ -28,6 +28,18 @@ class MacroViz extends CheckedEmitter {
         this.addRoot(root));
   }
 
+  get events() {
+    if (this.nodeViews) {
+      return Array.from(this.nodeViews.keys());
+    } else {
+      return [];
+    }
+  }
+
+  getNodeView(event) {
+    return this.nodeViews.get(event);
+  }
+
   addRoot(root) {
     this.topLevelNode = new NodeView(this, root);
     this.container.appendChild(this.topLevelNode.DOM);
@@ -63,7 +75,8 @@ class NodeView {
     this.label = d('label', {}, d('text', {}, ''));
     this.DOM = d('macroVizNode', {isFocusable: !!this.event.activationEnv.sourceLoc},
         this.label, this.children);
-
+    
+    this.label._event = this.event;
     this.label.onclick = (event) => this.macroViz.onClick(this.event);
     this.label.onmouseover = (event) => this.macroViz.onMouseover(this.event);
     this.label.onmouseout = (event) => this.macroViz.onMouseout(this.event);

@@ -25,4 +25,8 @@ class SourceLoc {
   strictlyContains(sourceLoc) {
     return this.contains(sourceLoc) && !this.equals(sourceLoc);
   }
+
+  containsIdx(pos) {
+    return this.startPos <= pos && pos < this.endPos;
+  }
 }

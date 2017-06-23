@@ -58,13 +58,55 @@ macroViz.addListener('mouseout', (event, _) => {
 const editor = microViz.editor;
 editor.setOption('lineNumbers', true);
 
-let sendHighlight = null;
+editor.getWrapperElement().onmousemove = e => {
+  const pos = editor.coordsChar({left: e.pageX, top: e.pageY});
+  highlightEventNodesAtPos(pos);
+}
+
+editor.getWrapperElement().onmouseout = e => {
+  macroViz.events.forEach(event => {
+    const nodeView = macroViz.getNodeView(event);
+    nodeView.DOM.classList.remove(
+      'highlight-cursorOnDecl',
+      'highlight-cursorOnSend',
+      'highlight-cursorOnSelector');
+  });
+}
+
+editor.on('cursorActivity', _ => {
+  const pos = editor.doc.getCursor('head');
+  highlightEventNodesAtPos(pos);
+});
+
+function highlightEventNodesAtPos(pos) {
+  const idx = editor.doc.indexFromPos(pos);
+  macroViz.events.forEach(event => {
+    if (!(event instanceof SendEvent)) return;
+    const nodeView = macroViz.getNodeView(event);
+    nodeView.DOM.classList.remove(
+      'highlight-cursorOnDecl',
+      'highlight-cursorOnSend',
+      'highlight-cursorOnSelector');
+    if (event.sourceLoc && event.sourceLoc.containsIdx(idx)) {
+      nodeView.DOM.classList.add('highlight-cursorOnSend');
+    } else if (event.activationEnv.sourceLoc && 
+        event.activationEnv.sourceLoc.containsIdx(idx)) {
+      nodeView.DOM.classList.add('highlight-cursorOnDecl');
+    }
+  })
+
+}
+
 let resultWidget = null;
 
 microViz.addListener('mouseover', (event, view) => {
   if (event instanceof SendEvent && !view.isImplementation) {
     view.DOM.setAttribute('title', event.toDetailString());
-    sendHighlight = highlightSourceLoc(event.sourceLoc, 'emptysend');
+    
+    defMarker = highlightSourceLoc(event.activationEnv.sourceLoc, 'def');
+    refMarker = highlightSourceLoc(event.sourceLoc, 'ref');
+    highlightEventNodesAtPos(editor.posFromIndex(event.sourceLoc.startPos));
+
     resultWidget = addResultWidget(
         event.sourceLoc,
         event.hasOwnProperty('returnValue') ? event._valueString(event.returnValue) : '?');
@@ -72,10 +114,20 @@ microViz.addListener('mouseover', (event, view) => {
 });
 
 microViz.addListener('mouseout', (_, view) => {
-  if (sendHighlight) {
-    sendHighlight.clear();
+  if (refMarker) {
+    refMarker.clear();
     $(resultWidget).remove();
   }
+  if (defMarker) {
+    defMarker.clear();
+  }
+  macroViz.events.forEach(event => {
+    const nodeView = macroViz.getNodeView(event);
+    nodeView.DOM.classList.remove(
+      'highlight-cursorOnDecl',
+      'highlight-cursorOnSend',
+      'highlight-cursorOnSelector');
+  });
 });
 
 function highlightSourceLoc(sourceLoc, highlightType) {

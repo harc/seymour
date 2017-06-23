@@ -39,16 +39,35 @@ parseError {
 }
 
 .highlight-def {
-  background-color: hsl(219, 85%, 97%);
+  background-color: hsl(219, 85%, 97%) !important;
 }
 
 .highlight-ref {
-  background-color: hsl(219, 79%, 90%);
+  background-color: hsl(219, 79%, 90%) !important;
 }
 
 .highlight-def,
 .highlight-ref {
   box-shadow: 1px 1px 0px 0px #aaa;
+}
+
+macroVizNode.highlight-cursorOnDecl > label {
+  background-color: hsl(57, 72%, 96%) !important;
+}
+
+macroVizNode.highlight-cursorOnSend > label {
+  background-color: hsl(57, 72%, 88%) !important;
+}
+
+macroVizNode.highlight-cursorOnSelector > label {
+  background-color: hsl(57, 72%, 78%) !important;
+}
+
+event:not(.firstInLine):not(:first-child):before,
+send:not(.firstInLine):not(:first-child):before {
+    content: ', ';
+    color: hsl(0, 0%, 70%);
+    white-space: pre;
 }
 
 resultWidget {
