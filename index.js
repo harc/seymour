@@ -28,6 +28,8 @@ function getPath(activationEnv) {
   return path;
 }
 
+// SETUP AND HIGHLIGHT
+
 const macroViz = new MacroViz(macroVizContainer);
 macroViz.addListener('click', (event, _) => {
   if (event.activationEnv.sourceLoc) {
@@ -139,6 +141,8 @@ function highlightSourceLoc(sourceLoc, highlightType) {
   return editor.doc.markText(startPos, endPos, {className: 'highlight-' + highlightType});
 }
 
+// RESULT WIDGETS
+
 function addResultWidget(sourceLoc, resultString) {
   if (!sourceLoc) {
     return;
@@ -150,12 +154,26 @@ function addResultWidget(sourceLoc, resultString) {
   return widget;
 }
 
+// ERRORS
+
+function clearError() {
+  errorDiv.innerHTML = '';
+}
+
+function displayError(message) {
+  errorDiv.innerHTML = '';
+  errorDiv.innerText = message;
+}
+
+// RUN INTERPRETER
+
 let interpreter;
 let R;
 let timeoutId;
 
 function run(ast, code) {
   if (arguments.length === 2) {
+    clearError();
     if (timeoutId !== null) {
       clearTimeout(timeoutId);
     }
@@ -179,7 +197,14 @@ function run(ast, code) {
     envAtPathIdx = interpreter.global.env;
   }
 
-  const done = interpreter.runForMillis(30);
+  let done;
+  try {
+    done = interpreter.runForMillis(30);
+  } catch (e) {
+    displayError(e.toString());
+    done = true;
+  }
+
   if (done) {
     timeoutId = null;
     console.log('(done)');

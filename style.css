@@ -34,6 +34,22 @@ parseError {
   user-select: none;
 }
 
+/* errors */
+
+#errorDiv {
+  font-family: monospace;
+  color: hsl(0, 50%, 70%);
+  padding: 5px;
+  border-bottom: 1px solid #ddd;
+  background: hsl(0, 0%, 95%);
+}
+
+#errorDiv:empty {
+  padding: 0px !important;
+}
+
+/* highlighting */
+
 .highlight-emptysend {
   background: hsl(217, 96%, 90%);
 }
