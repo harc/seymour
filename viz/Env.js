@@ -1,9 +1,10 @@
 "use strict";
 
 class Env {
-  constructor(sourceLoc, callerEnv, programOrSendEvent) {
+  constructor(sourceLoc, parentEnv, callerEnv, programOrSendEvent) {
     this.id = Env.nextEnvId++;
     this.sourceLoc = sourceLoc;
+    this.parentEnv = parentEnv;
     this.callerEnv = callerEnv;
     this.programOrSendEvent = programOrSendEvent;
     this.currentSendEvent = null;

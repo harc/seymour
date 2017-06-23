@@ -4,7 +4,7 @@ class Activation {
   constructor(args, formals, parent, caller, sourceLoc, code) {
     if (caller) {
       this.R = caller.R;
-      this.env = this.R.mkEnv(sourceLoc, caller.env);
+      this.env = this.R.mkEnv(sourceLoc, parent.env, caller.env);
     }
     this.args = args;
     this.varDeclActivations = Object.create(parent === null ? null : parent.varDeclActivations);

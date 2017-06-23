@@ -11,7 +11,7 @@ class EventRecorder extends CheckedEmitter {
   program(sourceLoc) {
     const event = new ProgramEvent(sourceLoc);
     this.currentProgramOrSendEvent = event;
-    const env = this.mkEnv(sourceLoc);
+    const env = this.mkEnv(sourceLoc, null);
     return env;
   }
 
@@ -22,10 +22,10 @@ class EventRecorder extends CheckedEmitter {
     // this event is only sent to event handler after it gets an activation environment (see below)
   }
 
-  mkEnv(newEnvSourceLoc) {
+  mkEnv(newEnvSourceLoc, parentEnv) {
     const programOrSendEvent = this.currentProgramOrSendEvent;
     const callerEnv = programOrSendEvent.env;
-    const newEnv = new Env(newEnvSourceLoc, callerEnv, programOrSendEvent);
+    const newEnv = new Env(newEnvSourceLoc, parentEnv, callerEnv, programOrSendEvent);
     if ((programOrSendEvent instanceof SendEvent || programOrSendEvent instanceof ProgramEvent) &&
         !programOrSendEvent.activationEnv) {
       programOrSendEvent.activationEnv = newEnv;
@@ -47,6 +47,7 @@ class EventRecorder extends CheckedEmitter {
     return returnValue;
   }
 
+/*
   enterScope(sourceLoc, env) {
     this.send(sourceLoc, env, null, 'enterNewScope', []);
     return this.mkEnv(sourceLoc);
@@ -55,6 +56,7 @@ class EventRecorder extends CheckedEmitter {
   leaveScope(env) {
     this.receive(env, null);
   }
+*/
 
   _emit(event) {
     this.currentProgramOrSendEvent.children.push(event);

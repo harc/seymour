@@ -37,6 +37,20 @@ class PathMatcher {
 
 let pathMatcher = new PathMatcher([]);
 
+function getPathMatchers(activationEnv) {
+  const pathMatchers = [];
+  let env = activationEnv;
+  while (env) {
+    pathMatchers.unshift(getPathMatcher(env));
+    env = env.parentEnv;
+  }
+  return pathMatchers;
+}
+
+function getPathMatcher(activationEnv) {
+  return new PathMatcher(getPath(activationEnv), activationEnv);
+}
+
 function getPath(activationEnv) {
   const path = [];
   while (true) {
@@ -57,7 +71,9 @@ function getPath(activationEnv) {
 const macroViz = new MacroViz(macroVizContainer);
 macroViz.addListener('click', (event, _) => {
   if (event.activationEnv.sourceLoc) {
-    pathMatcher = new PathMatcher(getPath(event.activationEnv), event.activationEnv);
+    const pathMatchers = getPathMatchers(event.activationEnv);
+    console.log(pathMatchers);
+    pathMatcher = getPathMatcher(event.activationEnv);
     microViz.setEnv(event.activationEnv);
   }
 });
