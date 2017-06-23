@@ -79,13 +79,6 @@ macroVizNode.highlight-cursorOnSelector > label {
   background-color: hsl(57, 72%, 78%) !important;
 }
 
-event:not(.firstInLine):not(:first-child):before,
-send:not(.firstInLine):not([isImplementation=true]):not(:first-child):before {
-    content: ', ';
-    color: hsl(0, 0%, 70%);
-    white-space: pre;
-}
-
 resultWidget {
   display: block;
   z-index: 2000;

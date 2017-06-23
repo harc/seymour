@@ -77,7 +77,7 @@ spacer:before {
 
 /*---*/
 
-.microViz microVizDiv send[loopy="true"] {
+.microViz microVizDiv send:not([isImplementation="true"]):not([empty="true"]) {
   border-radius: 4px;
   background: hsla(0, 0%, 0%, 0.05);
   box-shadow: 1px 1px 2px #ddd;
@@ -101,7 +101,8 @@ spacer:before {
 }
 
 .microViz microVizDiv send[isImplementation="true"] {
-  border-left: 3px double black;
+  margin-left: 2pt;
+  border-left: 3px double hsl(0, 0%, 50%);
 }
 
 .microViz microVizDiv send[empty="true"].firstInLine {
@@ -229,4 +230,11 @@ spacer:before {
 
 .microViz line:nth-child(even) {
   background: hsl(0, 0%, 98%);
+}
+
+.microViz event:not(.lastInLine):not(:last-child):after,
+.microViz send:not(.lastInLine):not([isImplementation=true]):not(:last-child):after {
+    content: ', ';
+    color: hsl(0, 0%, 70%);
+    white-space: pre;
 }
