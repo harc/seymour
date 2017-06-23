@@ -233,7 +233,7 @@ spacer:before {
 }
 
 .microViz event:not(.lastInLine):not(:last-child):after,
-.microViz send:not(.lastInLine):not([isImplementation=true]):not(:last-child):after {
+.microViz send[empty="true"]:not(.lastInLine):not([isImplementation=true]):not(:last-child):after {
     content: ', ';
     color: hsl(0, 0%, 70%);
     white-space: pre;
