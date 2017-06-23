@@ -16,12 +16,12 @@ class Interpreter {
     const t0 = performance.now();
     while (true) {
       let done;
-      try {
+      // try {
         done = this.step();
-      } catch(e) {
-        console.error('system error', e);
-        return true;
-      }
+      // } catch(e) {
+      //   console.error('system error', e);
+      //   return true;
+      // }
       if (done) {
         return true;
       }
