@@ -68,29 +68,27 @@ function getPath(activationEnv) {
 
 // SETUP AND HIGHLIGHT
 
-const macroViz = new MacroViz(macroVizContainer);
-macroViz.addListener('click', (event, _) => {
+function focusEvent(event) {
   if (event.activationEnv.sourceLoc) {
     pathMatchers = getPathMatchers(event.activationEnv);
     microViz.setPaths(pathMatchers);
   }
-});
+}
+
+const macroViz = new MacroViz(macroVizContainer);
+macroViz.addListener('click', (__, event, _) => focusEvent(event));
 
 let defMarker = null;
 let refMarker = null;
-macroViz.addListener('mouseover', (event, _) => {
+macroViz.addListener('mouseover', (__, event, _) => {
   if (event instanceof SendEvent) {
     defMarker = highlightSourceLoc(event.activationEnv.sourceLoc, 'def');
   }
   refMarker = highlightSourceLoc(event.sourceLoc, 'ref');
 });
-macroViz.addListener('mouseout', (event, _) => {
-  if (refMarker) {
-    refMarker.clear();
-  }
-  if (defMarker) {
-    defMarker.clear();
-  }
+macroViz.addListener('mouseout', (__, event, _) => {
+  if (refMarker) { refMarker.clear(); }
+  if (defMarker) { defMarker.clear(); }
 });
 
 const editor = microViz.editor;
@@ -137,9 +135,14 @@ function highlightEventNodesAtPos(pos) {
 
 let resultWidget = null;
 
-microViz.addListener('mouseover', (event, view) => {
+microViz.addListener('mouseover', (DOMEvent, event, view) => {
+  if (DOMEvent.getModifierState('Meta')) console.log('meta');
   if (event instanceof SendEvent && !view.isImplementation) {
     view.DOM.setAttribute('title', event.toDetailString());
+
+    clearResultWidget();
+    clearDefMarker();
+    clearRefMarker();
 
     defMarker = highlightSourceLoc(event.activationEnv.sourceLoc, 'def');
     refMarker = highlightSourceLoc(event.sourceLoc, 'ref');
@@ -151,14 +154,36 @@ microViz.addListener('mouseover', (event, view) => {
   }
 });
 
-microViz.addListener('mouseout', (_, view) => {
-  if (refMarker) {
-    refMarker.clear();
+microViz.addListener('click', (DOMEvent, event, view) => {
+  if (DOMEvent.getModifierState('Meta') && event instanceof SendEvent && !view.isImplementation) {
+    focusEvent(event);
+  }
+})
+
+
+function clearResultWidget() {
+  if (resultWidget) {
     $(resultWidget).remove();
   }
+}
+
+function clearDefMarker () {
   if (defMarker) {
     defMarker.clear();
   }
+}
+
+function clearRefMarker () {
+  if (refMarker) {
+    refMarker.clear();
+  }
+}
+
+microViz.addListener('mouseout', (DOMEvent, _, view) => {
+  clearResultWidget();
+  clearDefMarker();
+  clearRefMarker();
+  
   macroViz.events.forEach(event => {
     const nodeView = macroViz.getNodeView(event);
     nodeView.DOM.classList.remove(

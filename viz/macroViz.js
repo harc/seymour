@@ -3,9 +3,9 @@
 class MacroViz extends CheckedEmitter {
   constructor(container, eventRecorder = null) {
     super();
-    this.registerEvent('click', 'child', 'childView');
-    this.registerEvent('mouseover', 'child', 'childView');
-    this.registerEvent('mouseout', 'child', 'childView');
+    this.registerEvent('click', 'event', 'child', 'childView');
+    this.registerEvent('mouseover', 'event', 'child', 'childView');
+    this.registerEvent('mouseout', 'event', 'child', 'childView');
 
     this.macroViz = this;
 
@@ -55,9 +55,9 @@ class MacroViz extends CheckedEmitter {
     this.nodeViews.set(child, childView);
   }
 
-  onClick(event) { this.emit('click', event, this.nodeViews.get(event)); }
-  onMouseover(event) { this.emit('mouseover', event, this.nodeViews.get(event)); }
-  onMouseout(event) { this.emit('mouseout', event, this.nodeViews.get(event)); }
+  onClick(event, child) { this.emit('click', event, child, this.nodeViews.get(event)); }
+  onMouseover(event, child) { this.emit('mouseover', event, child, this.nodeViews.get(event)); }
+  onMouseout(event, child) { this.emit('mouseout', event, child, this.nodeViews.get(event)); }
 }
 
 class NodeView {
@@ -77,9 +77,9 @@ class NodeView {
         this.label, this.children);
 
     this.label._event = this.event;
-    this.label.onclick = (event) => this.macroViz.onClick(this.event);
-    this.label.onmouseover = (event) => this.macroViz.onMouseover(this.event);
-    this.label.onmouseout = (event) => this.macroViz.onMouseout(this.event);
+    this.label.onclick = (event) => this.macroViz.onClick(event, this.event);
+    this.label.onmouseover = (event) => this.macroViz.onMouseover(event, this.event);
+    this.label.onmouseout = (event) => this.macroViz.onMouseout(event, this.event);
 
     this.event.children.forEach(child => {
       this.addChild(child);

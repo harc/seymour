@@ -4,9 +4,9 @@
 class MicroViz extends CheckedEmitter {
   constructor(container, env = null) {
     super();
-    this.registerEvent('click', 'event', 'eventView');
-    this.registerEvent('mouseover', 'event', 'eventView');
-    this.registerEvent('mouseout', 'event', 'eventView');
+    this.registerEvent('click', 'DOMEvent', 'event', 'eventView');
+    this.registerEvent('mouseover', 'DOMEvent', 'event', 'eventView');
+    this.registerEvent('mouseout', 'DOMEvent', 'event', 'eventView');
 
     this.microViz = this;
 
@@ -154,9 +154,17 @@ class MicroViz extends CheckedEmitter {
     item.extent.forEach(line => this.fixHeight(line));
   }
 
-  onClick(event) { this.emit('click', event, this.eventViews.get(event)); }
-  onMouseover(event) { this.emit('mouseover', event, this.eventViews.get(event)); }
-  onMouseout(event) { this.emit('mouseout', event, this.eventViews.get(event)); }
+  onClick(DOMEvent, event) { 
+    this.emit('click', DOMEvent, event, this.eventViews.get(event)); 
+  }
+
+  onMouseover(DOMEvent, event) { 
+    this.emit('mouseover', DOMEvent, event, this.eventViews.get(event)); 
+  }
+
+  onMouseout(DOMEvent, event) { 
+    this.emit('mouseout', DOMEvent, event, this.eventViews.get(event)); 
+  }
 
   addEventView(event, view) {
     this.eventViews.set(event, view);
@@ -211,15 +219,15 @@ class SendView extends AbstractView {
     if (!this.isImplementation) {
       this.microViz.addEventView(this.microVizEvents.programOrSendEvent, this);
       this.DOM.onclick = (e) => {
-        this.microViz.onClick(this.microVizEvents.programOrSendEvent);
+        this.microViz.onClick(e, this.microVizEvents.programOrSendEvent);
         e.stopPropagation();
       };
       this.DOM.onmouseover = (e) => {
-        this.microViz.onMouseover(this.microVizEvents.programOrSendEvent);
+        this.microViz.onMouseover(e, this.microVizEvents.programOrSendEvent);
         e.stopPropagation();
       };
       this.DOM.onmouseout = (e) => {
-        this.microViz.onMouseout(this.microVizEvents.programOrSendEvent);
+        this.microViz.onMouseout(e, this.microVizEvents.programOrSendEvent);
         e.stopPropagation();
       };
     }
@@ -532,15 +540,15 @@ class EventView extends AbstractView {
 
     this.microViz.addEventView(this.event, this);
     this.DOM.onclick = (e) => {
-      this.microViz.onClick(this.event);
+      this.microViz.onClick(e, this.event);
       e.stopPropagation();
     };
     this.DOM.onmouseover = (e) => {
-      this.microViz.onMouseover(this.event);
+      this.microViz.onMouseover(e, this.event);
       e.stopPropagation();
     };
     this.DOM.onmouseout = (e) => {
-      this.microViz.onMouseout(this.event);
+      this.microViz.onMouseout(e, this.event);
       e.stopPropagation();
     };
   }
