@@ -97,12 +97,16 @@ spacer:before {
 }
 
 .microViz microvizDiv > send {
-  border-left: none !important;
+  background: none !important;
+  margin: 0 0 !important;
+  box-shadow: none !important;
 }
 
 .microViz microVizDiv send[isImplementation="true"] {
-  margin-left: 2pt;
-  border-left: 3px double hsl(0, 0%, 50%);
+  border-radius: 4px;
+  background: hsla(60, 56%, 91%, 0.35);
+  box-shadow: 1px 1px 2px #ddd;
+  margin: 0 4pt;
 }
 
 .microViz microVizDiv send[empty="true"].firstInLine {
