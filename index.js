@@ -9,9 +9,33 @@ console.debug = function(...args) {
 
 const microViz = new MicroViz(microVizContainer);
 
-let pathToSelectedEnv = [];
-let pathToSelectedEnvIdx = 0;
-let envAtPathIdx = null;
+class PathMatcher {
+  constructor(path, env = null) {
+    this.path = path;
+    this.idx = env ? path.length : 0;
+    this.envAtIdx = env;
+  }
+
+  reset(globalEnv) {
+    this.idx = 0;
+    this.envAtIdx = globalEnv;
+  }
+
+  get env() {
+     return this.idx === this.path.length ? this.envAtIdx : null;
+  }
+
+  processEvent(child, parent) {
+    console.assert(this.idx < this.path.length);
+    if (this.envAtIdx === parent.activationEnv &&
+        child.activationPathToken === this.path[this.idx]) {
+      this.idx++;
+      this.envAtIdx = child.activationEnv;
+    }
+  }
+}
+
+let pathMatcher = new PathMatcher([]);
 
 function getPath(activationEnv) {
   const path = [];
@@ -33,9 +57,7 @@ function getPath(activationEnv) {
 const macroViz = new MacroViz(macroVizContainer);
 macroViz.addListener('click', (event, _) => {
   if (event.activationEnv.sourceLoc) {
-    pathToSelectedEnv = getPath(event.activationEnv);
-    pathToSelectedEnvIdx = pathToSelectedEnv.length;
-    envAtPathIdx = event.activationEnv;
+    pathMatcher = new PathMatcher(getPath(event.activationEnv), event.activationEnv);
     microViz.setEnv(event.activationEnv);
   }
 });
@@ -91,7 +113,7 @@ function highlightEventNodesAtPos(pos) {
       'highlight-cursorOnSelector');
     if (event.sourceLoc && event.sourceLoc.containsIdx(idx)) {
       nodeView.DOM.classList.add('highlight-cursorOnSend');
-    } else if (event.activationEnv.sourceLoc && 
+    } else if (event.activationEnv.sourceLoc &&
         event.activationEnv.sourceLoc.containsIdx(idx)) {
       nodeView.DOM.classList.add('highlight-cursorOnDecl');
     }
@@ -104,7 +126,7 @@ let resultWidget = null;
 microViz.addListener('mouseover', (event, view) => {
   if (event instanceof SendEvent && !view.isImplementation) {
     view.DOM.setAttribute('title', event.toDetailString());
-    
+
     defMarker = highlightSourceLoc(event.activationEnv.sourceLoc, 'def');
     refMarker = highlightSourceLoc(event.sourceLoc, 'ref');
     highlightEventNodesAtPos(editor.posFromIndex(event.sourceLoc.startPos));
@@ -179,22 +201,20 @@ function run(ast, code) {
     }
     Obj.nextId = 0;
     R = new EventRecorder();
-    R.addListener('addChild', (child, parent) => {
-      if (pathToSelectedEnvIdx < pathToSelectedEnv.length &&
-          envAtPathIdx === parent.activationEnv &&
-          child.activationPathToken === pathToSelectedEnv[pathToSelectedEnvIdx]) {
-        pathToSelectedEnvIdx++;
-        envAtPathIdx = child.activationEnv;
-        if (pathToSelectedEnvIdx === pathToSelectedEnv.length) {
-          microViz.setEnv(envAtPathIdx);
-        }
-      }
-    });
     macroViz.setEventRecorder(R);
     interpreter = new Interpreter(ast.sourceLoc, code, R);
+    pathMatcher.reset(interpreter.global.env);
+    R.addListener('addChild', (child, parent) => {
+      if (pathMatcher.env) {
+        // nothing to do
+        return;
+      }
+      pathMatcher.processEvent(child, parent);
+      if (pathMatcher.env) {
+        microViz.setEnv(pathMatcher.env);
+      }
+    });
     microViz.setEnv(interpreter.global.env);
-    pathToSelectedEnvIdx = 0;
-    envAtPathIdx = interpreter.global.env;
   }
 
   let done;
