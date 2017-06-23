@@ -80,7 +80,7 @@ macroVizNode.highlight-cursorOnSelector > label {
 }
 
 event:not(.firstInLine):not(:first-child):before,
-send:not(.firstInLine):not(:first-child):before {
+send:not(.firstInLine):not([isImplementation=true]):not(:first-child):before {
     content: ', ';
     color: hsl(0, 0%, 70%);
     white-space: pre;
