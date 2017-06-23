@@ -241,4 +241,5 @@ spacer:before {
     content: ', ';
     color: hsl(0, 0%, 70%);
     white-space: pre;
+    font-family: sans-serif;
 }

@@ -442,6 +442,9 @@ class LocalEventGroupView extends AbstractView {
   }
 
   addEndSpacers() {
+    if (this.lastEventNode) {
+      this.lastEventNode.classList.add('lastInLine');
+    }
     range(this.lastEventNode.endLine + 1, this.endLine)
       .forEach(line => {
         const spacer = new Spacer(this, line);
@@ -453,6 +456,9 @@ class LocalEventGroupView extends AbstractView {
 
   clearEndSpacers() {
     this.endSpacers.forEach(spacer => this.DOM.removeChild(spacer.DOM));
+    if (this.lastEventNode) {
+      this.lastEventNode.classList.remove('lastInLine');
+    }
     this.endSpacers = [];
   }
 }
