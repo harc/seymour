@@ -125,6 +125,9 @@ editor.on('cursorActivity', _ => {
 });
 
 function highlightEventNodesAtPos(pos) {
+  clearResultWidget();
+  clearDefMarker();
+  clearRefMarker();
   const idx = editor.doc.indexFromPos(pos);
   macroViz.events.forEach(event => {
     if (!(event instanceof SendEvent)) return;
@@ -169,7 +172,6 @@ microViz.addListener('click', (DOMEvent, event, view) => {
     focusEvent(event);
   }
 })
-
 
 function clearResultWidget() {
   if (resultWidget) {
@@ -223,17 +225,6 @@ function addResultWidget(sourceLoc, resultString) {
   const widget = d('resultWidget', {}, '⇒ ' + resultString);
   editor.addWidget({line: endPos.line, ch: startPos.ch}, widget);
   return widget;
-}
-
-// ERRORS
-
-function clearError() {
-  errorDiv.innerHTML = '';
-}
-
-function displayError(message) {
-  errorDiv.innerHTML = '';
-  errorDiv.innerText = message;
 }
 
 // RUN INTERPRETER
@@ -323,14 +314,27 @@ editor.on('changes', function(cmInstance, changes) {
     const error = document.createElement('parseError');
     error.innerText = spaces(pos.ch) + '^\nExpected: ' + expected;
     parseErrorWidget = editor.addLineWidget(pos.line, error);
-    $(error).hide()/*.delay(2000)*/.slideDown()/*.queue(() => editor.refresh());*/;
+    $(error).hide().delay(2000).slideDown().queue(() => editor.refresh());
   }
 });
+
+// ERRORS
+
+function clearError() {
+  errorDiv.innerHTML = '';
+}
+
+function displayError(message) {
+  errorDiv.innerHTML = '';
+  errorDiv.innerText = message;
+}
+
 
 // Local storage keys
 const LS_KEY_PREFIX = 'app17392_';
 const LS_editorsShareOfUsableHeight = LS_KEY_PREFIX + 'editorsShareOfUsableHeight';
 
+// RESIZE LOGIC
 let editorsShareOfUsableHeight = localStorage.getItem(LS_editorsShareOfUsableHeight) || 0.5;
 
 fixHeights();
