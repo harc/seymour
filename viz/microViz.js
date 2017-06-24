@@ -54,6 +54,10 @@ class MicroViz extends CheckedEmitter {
     this.currentPathIdx++;
   }
 
+  setEventView(event, view) {
+    this.eventViews.set(event, view);
+  }
+
   addImplementation(microVizEvents) {
     const implMicroVizEvents = microVizEvents;
 
@@ -98,6 +102,8 @@ class MicroViz extends CheckedEmitter {
         this.editor.addLineClass(cmLineNumber, 'text', `line${lineNumber}`);
       });
   }
+
+  // line spacing logic
 
   fixHeight(lineNumber) {
     const $ = (el, query) => el.querySelector(query);
@@ -158,6 +164,8 @@ class MicroViz extends CheckedEmitter {
     item.extent.forEach(line => this.fixHeight(line));
   }
 
+  // EVENTS
+
   onClick(DOMEvent, event) { 
     this.emit('click', DOMEvent, event, this.eventViews.get(event)); 
   }
@@ -170,9 +178,6 @@ class MicroViz extends CheckedEmitter {
     this.emit('mouseout', DOMEvent, event, this.eventViews.get(event)); 
   }
 
-  addEventView(event, view) {
-    this.eventViews.set(event, view);
-  }
 }
 
 
@@ -221,7 +226,7 @@ class SendView extends AbstractView {
         this.addEventGroup(eventGroup));
 
     if (!this.isImplementation) {
-      this.microViz.addEventView(this.microVizEvents.programOrSendEvent, this);
+      this.microViz.setEventView(this.microVizEvents.programOrSendEvent, this);
       this.DOM.onclick = (e) => {
         this.microViz.onClick(e, this.microVizEvents.programOrSendEvent);
         e.stopPropagation();
@@ -335,10 +340,7 @@ class LocalEventGroupView extends AbstractView {
   }
 
   addFirstInLine(event) {
-    if (this.lastEventNode !== null) {
-      this.lastEventNode.classList.add('lastInLine');
-    }
-    this.lastEventNode = this.mkEventView(event, event.sourceLoc, 'firstInLine');
+    this.lastEventNode = this.mkEventView(event, event.sourceLoc, 'firstInLine lastInLine');
     this.lastPopulatedLineNumber = event.sourceLoc.endLineNumber;
     
     const referenceDOM = 
@@ -348,6 +350,9 @@ class LocalEventGroupView extends AbstractView {
   }
 
   addOverlappingAtTop(event) {
+    if (this.lastEventNode !== null) {
+      this.lastEventNode.classList.remove('lastInLine');
+    }
     this.lastEventNode = this.mkEventView(event, event.sourceLoc);
     range(this.lastPopulatedLineNumber + 1, event.sourceLoc.endLineNumber)
         .forEach(line => this.removeSpacer(line)); // TODO
@@ -360,6 +365,9 @@ class LocalEventGroupView extends AbstractView {
   }
 
   addOverlappingPushDown(event) {
+    if (this.lastEventNode !== null) {
+      this.lastEventNode.classList.remove('lastInLine');
+    }
     // TODO: factor out creation
     this.lastEventNode = this.mkEventView(event, event.sourceLoc, 'pushDown');
     this.lastPopulatedLineNumber =
@@ -378,6 +386,9 @@ class LocalEventGroupView extends AbstractView {
   }
 
   addOverlappingInsideOut(event) {
+    if (this.lastEventNode !== null) {
+      this.lastEventNode.classList.remove('lastInLine');
+    }
     const nodesToWrap = flatten(
       range(event.sourceLoc.startLineNumber, event.sourceLoc.endLineNumber)
         .map(line => this.children[line].concat(this.spacers[line]))
@@ -424,9 +435,9 @@ class LocalEventGroupView extends AbstractView {
 
   mkEventView(event, sourceLoc, classes = '') {
     if (event instanceof MicroVizEvents) {
-      return new SendView(this, event, sourceLoc, classes);
+      return new SendView(this, event, sourceLoc, classes + ' lastInLine');
     } else {
-      return new EventView(this, event, sourceLoc, classes);
+      return new EventView(this, event, sourceLoc, classes + ' lastInLine');
     }
   }
 
@@ -602,7 +613,7 @@ class EventView extends AbstractView {
     this.model = event;
     this.render();
 
-    this.microViz.addEventView(this.event, this);
+    this.microViz.setEventView(this.event, this);
     this.DOM.onclick = (e) => {
       this.microViz.onClick(e, this.event);
       e.stopPropagation();
