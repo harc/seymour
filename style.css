@@ -42,11 +42,12 @@ parseError {
   padding: 5px;
   border-bottom: 1px solid #ddd;
   background: hsl(0, 0%, 95%);
+  cursor: row-resize;
 }
 
-#errorDiv:empty {
+/*#errorDiv:empty {
   padding: 0px !important;
-}
+}*/
 
 /* highlighting */
 

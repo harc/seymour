@@ -323,9 +323,51 @@ editor.on('changes', function(cmInstance, changes) {
     const error = document.createElement('parseError');
     error.innerText = spaces(pos.ch) + '^\nExpected: ' + expected;
     parseErrorWidget = editor.addLineWidget(pos.line, error);
-    $(error).hide().delay(2000).slideDown().queue(() => editor.refresh());
+    $(error).hide()/*.delay(2000)*/.slideDown()/*.queue(() => editor.refresh());*/;
   }
 });
+
+// Local storage keys
+const LS_KEY_PREFIX = 'app17392_';
+const LS_editorsShareOfUsableHeight = LS_KEY_PREFIX + 'editorsShareOfUsableHeight';
+
+let editorsShareOfUsableHeight = localStorage.getItem(LS_editorsShareOfUsableHeight) || 0.5;
+
+fixHeights();
+
+$(errorDiv).mousedown(e => {
+  $(errorDiv).data('lastY', e.clientY);
+  $('body').mousemove(bodyMouseMoveHandler);
+  $('body').mouseup(bodyMouseUpHandler);
+
+  function bodyMouseUpHandler(e) {
+    $(errorDiv).data('lastY', null);
+    $('body').off('mousemove', bodyMouseMoveHandler);
+    $('body').off('mouseup', bodyMouseUpHandler);
+  }
+  function bodyMouseMoveHandler(e) {
+    const lastY = $(errorDiv).data('lastY');
+    if (!lastY) {
+      return;
+    }
+    e.preventDefault();
+    const delta = e.clientY - lastY;
+    const newEditorHeight = $(topHalf).outerHeight() + delta;
+    const usableHeight = $(window).innerHeight() - $(errorDiv).outerHeight(true);
+    editorsShareOfUsableHeight = newEditorHeight / usableHeight;
+    localStorage.setItem(LS_editorsShareOfUsableHeight, editorsShareOfUsableHeight);
+    $(errorDiv).data('lastY', e.clientY);
+    fixHeights();
+  }
+});
+
+function fixHeights() {
+  const usableHeight = $(window).innerHeight() - $(errorDiv).outerHeight(true);
+  $(topHalf).outerHeight(usableHeight * editorsShareOfUsableHeight);
+  $(macroVizScroller).outerHeight(usableHeight - $(topHalf).outerHeight());
+}
+
+
 
 const sampleProgram = `"hello world".println();
 
