@@ -42,17 +42,11 @@ class MicroViz extends CheckedEmitter {
 
     Object.keys(this.widgetForLine)
       .forEach(line => this.widgetForLine[line].clear());
+    this.widgetForLine = {};
     this.microVizParent.innerHTML = '';
 
     this.clearBackground();
     this.setupBackground();
-
-    // console.assert(this.currentPath.env !== null);
-    // const microVizEvents = this.currentPath.env.microVizEvents;
-    // this.topLevelImpl = new SendView(this, microVizEvents);
-    // this.microVizParent.appendChild(this.topLevelImpl.DOM);
-
-    
   }
 
   setImplementation(sendView) {
@@ -115,9 +109,9 @@ class MicroViz extends CheckedEmitter {
     const itemsOnLine = $$(this.container, '*[endLine="' + lineNumber + '"]').concat(line);
 
     itemsOnLine.forEach(item => item.style.paddingBottom = '0px');
-    if (this.widgetForLine.hasOwnProperty(cmLineNumber)) {
-      this.widgetForLine[cmLineNumber].clear();
-    }
+    // if (this.widgetForLine.hasOwnProperty(cmLineNumber)) {
+    //   this.widgetForLine[cmLineNumber].clear();
+    // }
 
     const bottom = itemsOnLine
         .map(element => element.getBoundingClientRect().bottom)
@@ -140,9 +134,14 @@ class MicroViz extends CheckedEmitter {
 
   spaceLine(cmLineNumber, line, bottomY) {
     const paddingBottom = bottomY - line.getBoundingClientRect().bottom;
-    this.widgetForLine[cmLineNumber] = this.editor.addLineWidget(
-      cmLineNumber, this.spacer(paddingBottom)
-    );
+    if (this.widgetForLine.hasOwnProperty(cmLineNumber)) {
+      this.widgetForLine[cmLineNumber].node.style.height = paddingBottom;
+      this.widgetForLine[cmLineNumber].changed();
+    } else {
+      this.widgetForLine[cmLineNumber] = this.editor.addLineWidget(
+        cmLineNumber, this.spacer(paddingBottom)
+      );
+    }
   }
 
   inflate(element, bottomY) {
