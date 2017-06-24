@@ -17,7 +17,7 @@ class Env {
     let visitedDeclEnv = false;
     while (env) {
       if (env.sourceLoc && event.sourceLoc &&
-          (env.sourceLoc.contains(event.sourceLoc) ||
+          ((!(event instanceof VarAssignmentEvent) && env.sourceLoc.contains(event.sourceLoc)) ||
            event instanceof VarAssignmentEvent && !visitedDeclEnv)) {
         env.maybeAdd(event);
       }

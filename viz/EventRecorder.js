@@ -32,8 +32,8 @@ class EventRecorder extends CheckedEmitter {
       const parentEvent = programOrSendEvent.env ? programOrSendEvent.env.programOrSendEvent : null;
       if (parentEvent) {
         parentEvent.children.push(programOrSendEvent);
-        this.emit('addChild', programOrSendEvent, parentEvent);
         programOrSendEvent.env.receive(programOrSendEvent);
+        this.emit('addChild', programOrSendEvent, parentEvent);
       } else {
         this.emit('addRoot', programOrSendEvent);
       }
@@ -60,8 +60,8 @@ class EventRecorder extends CheckedEmitter {
 
   _emit(event) {
     this.currentProgramOrSendEvent.children.push(event);
-    this.emit('addChild', event, this.currentProgramOrSendEvent);
     event.env.receive(event);
+    this.emit('addChild', event, this.currentProgramOrSendEvent);
   }
 
   localReturn(sourceLoc, env, value) {

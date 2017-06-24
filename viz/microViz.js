@@ -297,8 +297,11 @@ class LocalEventGroupView extends AbstractView {
     this.model = localEventGroup;
     this.lastPopulatedLineNumber = sourceLoc.startLineNumber - 1;
     this.lastEventNode = null;
-    this.children = [];
-    this.endSpacers = [];
+    this.children = {};
+    this.spacers = {};
+
+    this.extent.forEach(line => this.children[line] = []);
+    this.extent.forEach(line => this.spacers[line] = null);
 
     this.parent.eventGroups.push(this);
 
@@ -311,6 +314,7 @@ class LocalEventGroupView extends AbstractView {
 
   render() {
     this.DOM = d('localEventGroup', this.attributes);
+    this.addSpacers();
     this.localEventGroup.events.forEach(event => this.addEvent(event));
     super.render();
   }
@@ -318,7 +322,6 @@ class LocalEventGroupView extends AbstractView {
   // MAIN ADDEVENT LOGIC
 
   addEvent(event) {
-    this.clearEndSpacers(); // We can reuse the spacers
     if (event.sourceLoc.startLineNumber > this.lastPopulatedLineNumber) {
       this.addFirstInLine(event);
     } else if (event.sourceLoc.startLineNumber === this.lastChild.startLine) {
@@ -330,141 +333,174 @@ class LocalEventGroupView extends AbstractView {
     } else {
       throw new Error('impossible!');
     }
-    this.addEndSpacers();
   }
 
   addFirstInLine(event) {
-    range(this.lastPopulatedLineNumber + 1, event.sourceLoc.startLineNumber - 1)
-          .forEach(lineNumber => this.addChild(new Spacer(this, lineNumber)));
     if (this.lastEventNode !== null) {
       this.lastEventNode.classList.add('lastInLine');
     }
     this.lastEventNode = this.mkEventView(event, event.sourceLoc, 'firstInLine');
     this.lastPopulatedLineNumber = event.sourceLoc.endLineNumber;
-    this.addChild(this.lastEventNode);
+    
+    const referenceDOM = 
+      this.spacers[this.lastEventNode.endLine].DOM.nextSibling || null;
+    this.lastEventNode.extent.forEach(line => this.removeSpacer(line)); // TODO
+    this.addChild(this.lastEventNode, referenceDOM);
   }
 
   addOverlappingAtTop(event) {
     this.lastEventNode = this.mkEventView(event, event.sourceLoc);
+    range(this.lastPopulatedLineNumber + 1, event.sourceLoc.endLineNumber)
+        .forEach(line => this.removeSpacer(line)); // TODO
     this.lastPopulatedLineNumber =
         Math.max(this.lastPopulatedLineNumber, event.sourceLoc.endLineNumber);
-    this.addChild(this.lastEventNode);
+
+    const childrenOnLine = this.children[event.sourceLoc.startLineNumber];
+    const referenceDOM = childrenOnLine[childrenOnLine.length - 1].DOM.nextSibling;
+    this.addChild(this.lastEventNode, referenceDOM);
   }
 
   addOverlappingPushDown(event) {
+    // TODO: factor out creation
     this.lastEventNode = this.mkEventView(event, event.sourceLoc, 'pushDown');
     this.lastPopulatedLineNumber =
         Math.max(this.lastPopulatedLineNumber, event.sourceLoc.endLineNumber);
 
+    range(this.lastPopulatedLineNumber + 1, event.endLine)
+        .forEach(line => this.removeSpacer(line)); // TODO
+    const childrenOnLine = this.children[event.sourceLoc.startLineNumber];
+    const referenceDOM = childrenOnLine[childrenOnLine.length - 1].DOM.nextSibling;
+
     const spacers =
         range(this.lastChild.startLine, event.sourceLoc.startLineNumber - 1).
         map(lineNumber => new Spacer(this, lineNumber));
-    if (spacers.length > 0) { spacers.push({DOM: d('br')}); }
-
-    this.addChild(new Wrapper(this, ...spacers, this.lastEventNode));
+    if (spacers.length > 0) { this.lastEventNode.classList.add('firstInLine'); }
+    this.addChild(new Wrapper(this, ...spacers, this.lastEventNode), referenceDOM);
   }
 
   addOverlappingInsideOut(event) {
-    const nodesToWrap = [];
-    while (event.sourceLoc.startLineNumber <= this.lastChild.startLine) {
-      nodesToWrap.unshift(this.popChild());
-    }
-    this.addChild(new Wrapper(this, ...nodesToWrap));
+    const nodesToWrap = flatten(
+      range(event.sourceLoc.startLineNumber, event.sourceLoc.endLineNumber)
+        .map(line => this.children[line].concat(this.spacers[line]))
+    ).filter(node => node !== null);
+    const referenceDOM = nodesToWrap[nodesToWrap.length-1].DOM.nextSibling || null;
+    nodesToWrap.forEach(node => this.removeChildOrSpacer(node));
+    const wrapper = new Wrapper(this, ...nodesToWrap);
+    this.addChild(wrapper, referenceDOM);
     this.addOverlappingPushDown(event);
   }
 
-  addImplementation(implView) {
+  addImplementation(implView) { // TODO
     // pick out nodes on implview's extent
-    const nodesToWrap = this.children.filter(child => 
+    const nodesToWrap = flatten(this.extent
+        .map(line => this.children[line].concat(this.spacers[line])))
+      .filter(node => node !== null)
+      .filter(child => 
         !(child.startLine < implView.startLine  && child.endLine < implView.startLine) &&
         !(child.startLine > implView.endLine  && child.endLine > implView.endLine));
-    const startSpliceIdx = this.children.indexOf(nodesToWrap[0]);
-    const childBefore = this.children[startSpliceIdx - 1] && this.children[startSpliceIdx - 1].DOM;
+    const referenceDOM = nodesToWrap[nodesToWrap.length-1].DOM.nextSibling || null;
     
     // remove those nodes
-    nodesToWrap.forEach(node => {
-      if (node.classes.includes('firstInLine')) {
-        this.DOM.removeChild(node.DOM.previousSibling);
-      }
-      this.DOM.removeChild(node.DOM);
-    });
+    nodesToWrap.forEach(node => this.removeChildOrSpacer(node));
 
-    const childAfter = childBefore ? childBefore.nextSibling : this.DOM.firstChild;
     const parentWrapper = new Wrapper(this, ...nodesToWrap);
-    if (parentWrapper.classes.includes('firstInLine') || implView.startLine > 1) {
-      this.DOM.insertBefore(d('br'), childAfter);
+    if (implView.startLine > 1) {
+      parentWrapper.classList.add('firstInLine');
     }
-    this.DOM.insertBefore(parentWrapper.DOM, childAfter);
+    this.addChildWithoutTracking(parentWrapper, referenceDOM);
 
-
-    implView.classList.add('firstInLine'); // TODO: put this in a nicer place
     const startLine = nodesToWrap[0].startLine;
     const childNodes = [];
     range(startLine, implView.startLine - 1)
         .forEach(lineNumber => childNodes.push(new Spacer(this, lineNumber)));
+    if (childNodes.length > 0) {
+      implView.classList.add('firstInLine'); // TODO: put this in a nicer place
+    }
     childNodes.push(implView);
     const childWrapper = new Wrapper(this, ...childNodes);
-    this.DOM.insertBefore(childWrapper.DOM, childAfter);
-
-    this.children.splice(startSpliceIdx, nodesToWrap.length, parentWrapper, childWrapper);
-    this.microViz.fixHeightsFor(childWrapper);
+    this.addChildWithoutTracking(childWrapper, referenceDOM);
   } 
 
   // UTILS
 
   mkEventView(event, sourceLoc, classes = '') {
     if (event instanceof MicroVizEvents) {
-      // if (this.microViz.currentPath &&
-      //     event.programOrSendEvent.activationEnv === this.microViz.currentPath.env) {
-      //   this.microViz.addImplementation(event);
-      // }
       return new SendView(this, event, sourceLoc, classes);
     } else {
       return new EventView(this, event, sourceLoc, classes);
     }
   }
 
-  get lastChild() { return this.children[this.children.length - 1]; }
+  get numChildren() { return flatten(Object.values(this.children)).length; }
 
-  addChild(view) {
+  addChild(view, referenceDOM) {
     if (view.classList.contains('firstInLine') &&
-        this.children.length > 0) {
-      this.DOM.appendChild(d('br'));
+        view.startLine > this.startLine) {
+      this.DOM.insertBefore(d('br'), referenceDOM);
     }
-    this.children.push(view);
-    this.DOM.appendChild(view.DOM);
+    
+    if (this.lastChild) {
+      range(this.lastChild.endLine, view.startLine)
+        .forEach(line => this.microViz.fixHeight(line));
+    }
+
+    this.children[view.startLine].push(view);
+    this.lastChild = view;
+    this.DOM.insertBefore(view.DOM, referenceDOM);
     this.microViz.fixHeightsFor(view);
   }
 
-  popChild() {
-    const view = this.children.pop();
-    if (view.classList.contains('firstInLine') && 
-        view.DOM.previousSibling.nodeName === 'BR') {
-      this.DOM.removeChild(view.DOM.previousSibling);
+  addChildWithoutTracking(view, referenceDOM) {
+    if (view.classList.contains('firstInLine') &&
+        view.startLine > this.startLine) {
+      this.DOM.insertBefore(d('br'), referenceDOM);
     }
-    this.DOM.removeChild(view.DOM);
-    return view;
+    
+    if (this.lastChild) {
+      range(this.lastChild.endLine, view.startLine)
+        .forEach(line => this.microViz.fixHeight(line));
+    }
+    this.DOM.insertBefore(view.DOM, referenceDOM);
+    this.microViz.fixHeightsFor(view);
   }
 
-  addEndSpacers() {
-    if (this.lastEventNode) {
-      this.lastEventNode.classList.add('lastInLine');
+  removeChildOrSpacer(view) {
+    if (view instanceof Spacer) {
+      this.removeSpacer(view.lineNumber);
+    } else {
+      const childrenOnLine = this.children[view.startLine];
+      const viewIdx = childrenOnLine.indexOf(view);
+      this.children[view.startLine] = childrenOnLine.splice(viewIdx, 1);
+
+      if (view.classList.contains('firstInLine') && 
+        view.DOM.previousSibling) {
+          this.DOM.removeChild(view.DOM.previousSibling);
+      }
+      this.DOM.removeChild(view.DOM);
     }
-    range(this.lastEventNode.endLine + 1, this.endLine)
+  }
+
+  addSpacers() {
+    this.extent
       .forEach(line => {
         const spacer = new Spacer(this, line);
-        this.endSpacers.push(spacer);
+        this.spacers[line] = spacer;
+        if (line > this.startLine) {
+          this.DOM.appendChild(d('br'));
+        }
         this.DOM.appendChild(spacer.DOM);
         this.microViz.fixHeightsFor(spacer);
-      });
+      })
   }
 
-  clearEndSpacers() {
-    this.endSpacers.forEach(spacer => this.DOM.removeChild(spacer.DOM));
-    if (this.lastEventNode) {
-      this.lastEventNode.classList.remove('lastInLine');
+  removeSpacer(line) {
+    if (this.spacers[line]) {
+      if (line > this.startLine) {
+        this.DOM.removeChild(this.spacers[line].DOM.previousSibling);
+      }
+      this.DOM.removeChild(this.spacers[line].DOM);
+      this.spacers[line] = null;
     }
-    this.endSpacers = [];
   }
 }
 
@@ -473,8 +509,8 @@ class RemoteEventGroupView extends AbstractView {
     super(parent, sourceLoc, classes);
     this.remoteEventGroup = remoteEventGroup;
     this.model = remoteEventGroup;
-    this.eventViews = new WeakMap();
-    this.events = [];
+    this.eventViews = new Map();
+    this.numShownEvents = 0;
 
     this.parent.eventGroups.push(this);
 
@@ -493,17 +529,25 @@ class RemoteEventGroupView extends AbstractView {
   addEvent(event) {
     const eventView = new EventView(this, event, this.sourceLoc, 'remote firstInLine lastInLine');
     this.eventViews.set(event, eventView);
-    if (this.events.length > 0) {
+    if (this.numShownEvents > 0) {
       this.DOM.appendChild(d('br'));
     }
     this.DOM.appendChild(eventView.DOM);
     this.microViz.fixHeightsFor(this);
 
-    this.events.push(eventView);
+    this.numShownEvents++;
   }
 
   removeEvent(event) {
-    this.DOM.removeChild(this.eventViews.get(event).DOM);
+    const eventView = this.eventViews.get(event);
+    if (eventView.DOM.previousSibling && eventView.DOM.previousSibling.nodeName === 'BR') {
+      this.DOM.removeChild(eventView.DOM.previousSibling);
+    }
+    if (!(eventView.DOM.previousSibling)) {
+      this.DOM.removeChild(eventView.DOM.nextSibling);
+    }
+    this.DOM.removeChild(eventView.DOM);
+    this.numShownEvents--;
   }
 }
 
@@ -543,7 +587,7 @@ class Wrapper extends AbstractView {
   render() {
     this.DOM = d('wrapper', this.attributes, 
         ...flatten(this.views.map((v, idx) => {
-          if (v.classList.contains('firstInLine') && idx > 0) {
+          if ((v.classList.contains('firstInLine') || v instanceof Spacer) && idx > 0) {
             return [d('br'), v.DOM];
           } else {
             return [v.DOM];

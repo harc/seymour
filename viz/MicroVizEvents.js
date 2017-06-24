@@ -88,8 +88,8 @@ class RemoteEventGroup extends AbstractEventGroup {
     for (let idx = 0; idx < this.events.length; idx++) {
       if (event.subsumes(this.events[idx])) {
         this.emit('removeEvent', this.events[idx]);
-        this.events[idx] = event;
-        return;
+        this.events.splice(idx, 1);
+        break;
       }
     }
 

@@ -44,6 +44,10 @@
   display: inline-block;
 }
 
+.microViz microVizDiv spacer {
+  height: 1.2em;
+}
+
 .microViz microVizDiv event,
 .microViz microVizDiv localEventGroup,
 .microViz microVizDiv remoteEventGroup,
@@ -66,11 +70,6 @@
 .microViz microVizDiv remoteEventGroup > *,
 .microViz microVizDiv wrapper > * {
   vertical-align: top;
-}
-
-spacer:before {
-  content: "\A";
-  white-space: pre-line;
 }
 
 
