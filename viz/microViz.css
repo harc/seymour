@@ -89,7 +89,7 @@ spacer:before {
 }
 
 .microViz microVizDiv event {
-  margin: 0 10px;
+  margin: 0 5px;
 }
 
 .microViz microVizDiv send {
@@ -241,5 +241,4 @@ spacer:before {
     content: ', ';
     color: hsl(0, 0%, 70%);
     white-space: pre;
-    font-family: sans-serif;
 }

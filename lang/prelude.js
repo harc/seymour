@@ -127,6 +127,16 @@ const preludeAST = (function() {
       @{ this.setVar('ans', this.receiver % this.getVar('that')); }@
       return ans;
     }
+    def Number.floor() {
+      var ans = null;
+      @{ this.setVar('ans', Math.floor(this.receiver)); }@
+      return ans;
+    }
+    def Number.ceil() {
+      var ans = null;
+      @{ this.setVar('ans', Math.ceil(this.receiver)); }@
+      return ans;
+    }
 
     class Boolean;
     
