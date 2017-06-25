@@ -126,8 +126,6 @@ editor.on('cursorActivity', _ => {
 
 function highlightEventNodesAtPos(pos) {
   clearResultWidget();
-  clearDefMarker();
-  clearRefMarker();
   const idx = editor.doc.indexFromPos(pos);
   macroViz.events.forEach(event => {
     if (!(event instanceof SendEvent)) return;
