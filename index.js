@@ -314,7 +314,8 @@ editor.on('changes', function(cmInstance, changes) {
     const error = document.createElement('parseError');
     error.innerText = spaces(pos.ch) + '^\nExpected: ' + expected;
     parseErrorWidget = editor.addLineWidget(pos.line, error);
-    $(error).hide().delay(2000).slideDown().queue(() => editor.refresh());
+    $(error).hide().delay(2000).slideDown().queue(() => parseErrorWidget.changed());
+    parseErrorWidget.changed();
   }
 });
 
