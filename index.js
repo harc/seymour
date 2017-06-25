@@ -105,6 +105,9 @@ const editor = microViz.editor;
 editor.setOption('lineNumbers', true);
 
 editor.getWrapperElement().onmousemove = e => {
+  clearDefMarker();
+  clearRefMarker();
+  clearResultWidget();
   const pos = editor.coordsChar({left: e.pageX, top: e.pageY});
   highlightEventNodesAtPos(pos);
 }
@@ -125,7 +128,6 @@ editor.on('cursorActivity', _ => {
 });
 
 function highlightEventNodesAtPos(pos) {
-  clearResultWidget();
   const idx = editor.doc.indexFromPos(pos);
   macroViz.events.forEach(event => {
     if (!(event instanceof SendEvent)) return;
