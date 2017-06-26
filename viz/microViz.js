@@ -2,7 +2,7 @@
 
 // toplevel class. persists across focuses. manages codemirror
 class MicroViz extends CheckedEmitter {
-  constructor(container, env = null) {
+  constructor(container) {
     super();
     this.registerEvent('click', 'DOMEvent', 'event', 'eventView');
     this.registerEvent('mouseover', 'DOMEvent', 'event', 'eventView');
@@ -15,10 +15,6 @@ class MicroViz extends CheckedEmitter {
     this.widgetForLine = {};
 
     this.render();
-
-    if (env !== null) {
-      this.setEnv(env);
-    }
   }
 
   render() {
@@ -30,6 +26,8 @@ class MicroViz extends CheckedEmitter {
     this.container.appendChild(this.microVizHolder);
     this.container.classList.add('microViz');
   }
+
+  // compositing and paths
 
   get currentPath() { return this.paths[this.currentPathIdx]; }
 
@@ -75,6 +73,8 @@ class MicroViz extends CheckedEmitter {
     }
   }
 
+  // background/printer paper
+
   clearBackground() {
     while (this.background.children.length > 0) {
       this.background.removeChild(this.background.firstChild);
@@ -115,10 +115,6 @@ class MicroViz extends CheckedEmitter {
     const itemsOnLine = $$(this.container, '*[endLine="' + lineNumber + '"]').concat(line);
 
     itemsOnLine.forEach(item => item.style.paddingBottom = '0px');
-    // if (this.widgetForLine.hasOwnProperty(cmLineNumber)) {
-    //   this.widgetForLine[cmLineNumber].clear();
-    // }
-
     const bottom = itemsOnLine
         .map(element => element.getBoundingClientRect().bottom)
         .reduce((x, y) => Math.max(x, y), line.getBoundingClientRect().bottom);
@@ -164,7 +160,7 @@ class MicroViz extends CheckedEmitter {
     item.extent.forEach(line => this.fixHeight(line));
   }
 
-  // EVENTS
+  // events
 
   onClick(DOMEvent, event) { 
     this.emit('click', DOMEvent, event, this.eventViews.get(event)); 
@@ -217,6 +213,7 @@ class SendView extends AbstractView {
     this.eventGroups = [];
 
     if (this.microVizEvents.isImplementation) {
+      // parent needs to know about this view before it renders
       this.microViz.setImplementation(this);
     }
 
@@ -253,15 +250,6 @@ class SendView extends AbstractView {
     super.render();
   }
 
-  addImplementation(implView) {
-    if (!this.isImplementation) {
-      throw new Error('tried to add an implementation to a non-implementation');
-    }
-
-    console.assert(this.numGroups === 1, 'implementation must have 1 event group');
-    this.eventGroups[0].addImplementation(implView); 
-  }
-
   addEmptySendGroup() {
     this.DOM.setAttribute('empty', true);
     this.DOM.appendChild(
@@ -290,7 +278,15 @@ class SendView extends AbstractView {
     }
 
     this.DOM.appendChild(eventGroupView.DOM);
-    // this.eventGroups.push(eventGroupView);
+  }
+
+  addImplementation(implView) {
+    if (!this.isImplementation) {
+      throw new Error('tried to add an implementation to a non-implementation');
+    }
+
+    console.assert(this.numGroups === 1, 'implementation must have 1 event group');
+    this.eventGroups[0].addImplementation(implView); 
   }
 }
 
@@ -307,6 +303,7 @@ class LocalEventGroupView extends AbstractView {
     this.extent.forEach(line => this.children[line] = []);
     this.extent.forEach(line => this.spacers[line] = null);
 
+    // parent needs to know about this view before it renders
     this.parent.eventGroups.push(this);
 
     this.render();
@@ -374,7 +371,7 @@ class LocalEventGroupView extends AbstractView {
         Math.max(this.lastPopulatedLineNumber, event.sourceLoc.endLineNumber);
 
     range(this.lastPopulatedLineNumber + 1, event.endLine)
-        .forEach(line => this.removeSpacer(line)); // TODO
+        .forEach(line => this.removeSpacer(line));
     const childrenOnLine = this.children[event.sourceLoc.startLineNumber];
     const referenceDOM = childrenOnLine[childrenOnLine.length - 1].DOM.nextSibling;
 
@@ -400,7 +397,7 @@ class LocalEventGroupView extends AbstractView {
     this.addOverlappingPushDown(event);
   }
 
-  addImplementation(implView) { // TODO
+  addImplementation(implView) {
     // pick out nodes on implview's extent
     const nodesToWrap = flatten(this.extent
         .map(line => this.children[line].concat(this.spacers[line])))
@@ -522,6 +519,7 @@ class RemoteEventGroupView extends AbstractView {
     this.eventViews = new Map();
     this.numShownEvents = 0;
 
+    // parent needs to know about this view before it renders
     this.parent.eventGroups.push(this);
 
     this.render();
@@ -553,6 +551,8 @@ class RemoteEventGroupView extends AbstractView {
     if (eventView.DOM.previousSibling && eventView.DOM.previousSibling.nodeName === 'BR') {
       this.DOM.removeChild(eventView.DOM.previousSibling);
     }
+    // if we're getting rid of the first event in the group, 
+    // make sure the group doesn't start with a <br> tag
     if (!(eventView.DOM.previousSibling)) {
       this.DOM.removeChild(eventView.DOM.nextSibling);
     }
