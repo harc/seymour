@@ -78,7 +78,7 @@
 
 .microViz microVizDiv send:not([isImplementation="true"]):not([empty="true"]) {
   border-radius: 4px;
-  background: hsla(0, 0%, 0%, 0.05);
+  background: rgba(100, 149, 237, .05);
   box-shadow: 1px 1px 2px #ddd;
   margin: 0 4pt;
 }
