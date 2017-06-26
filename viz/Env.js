@@ -72,7 +72,8 @@ class Env {
   shouldOnlyShowWhenLocal(event) {
     return event instanceof SendEvent ||
         event instanceof ReturnEvent ||
-        event instanceof VarDeclEvent;
+        event instanceof VarDeclEvent ||
+        event instanceof ShowEvent;
   }
 
   shouldBubbleUp(event) {

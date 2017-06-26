@@ -160,3 +160,12 @@ class NonLocalReturnEvent extends ReturnEvent {
     return 'return ' + this._valueString(this.value);
   }
 }
+
+class ShowEvent extends Event {
+  constructor(sourceLoc, env, string) {
+    super(sourceLoc, env);
+    this.string = string;
+  }
+
+  toMicroVizString() { return this.string; }
+}

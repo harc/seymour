@@ -25,6 +25,15 @@ const preludeAST = (function() {
       return null;
     }
     def Object.println() = this.toString().log();
+    def Object.show() {
+      var str = this.toString();
+      @{ this.R.show(
+          this.env.programOrSendEvent.sourceLoc, 
+          this.env.programOrSendEvent.env, 
+          this.getVar('str')
+        ); }@
+      return this;
+    }
     def Object.toIdString() {
       var ans = null;
       @{
