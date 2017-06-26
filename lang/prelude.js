@@ -31,7 +31,8 @@ const preludeAST = (function() {
       @{ this.R.show(
           this.env.programOrSendEvent.sourceLoc, 
           this.env.programOrSendEvent.env, 
-          '' + this.getVar('str')
+          this.getVar('str'),
+          this.getVar('defaultStr')
         ); }@
       return this;
     }

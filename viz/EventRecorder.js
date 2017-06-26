@@ -64,7 +64,10 @@ class EventRecorder extends CheckedEmitter {
     this.emit('addChild', event, this.currentProgramOrSendEvent);
   }
 
-  show(sourceLoc, env, string) {
+  show(sourceLoc, env, string, alt) {
+    if (typeof string !== 'string') {
+      string = alt;
+    }
     const event = new ShowEvent(sourceLoc, env, string);
     this._emit(event);
   } 
