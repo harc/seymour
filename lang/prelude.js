@@ -26,11 +26,12 @@ const preludeAST = (function() {
     }
     def Object.println() = this.toString().log();
     def Object.show() {
-      var str = this.toString();
+      var str = this.toDebugString();
+      var defaultStr = this.toIdString();
       @{ this.R.show(
           this.env.programOrSendEvent.sourceLoc, 
           this.env.programOrSendEvent.env, 
-          this.getVar('str')
+          this.getVar('str') || this.getVar('defaultStr')
         ); }@
       return this;
     }
@@ -57,6 +58,7 @@ const preludeAST = (function() {
       return ans;
     }
     def Class.toString() = "class " + this.name();
+    def Class.toDebugString() = "class " + this.name();
 
     class Null;
     def Null.toString() = "null";
