@@ -342,7 +342,7 @@ class LocalEventGroupView extends AbstractView {
     
     const referenceDOM = 
       this.spacers[this.lastEventNode.endLine].DOM.nextSibling || null;
-    this.lastEventNode.extent.forEach(line => this.removeSpacer(line)); // TODO
+    this.lastEventNode.extent.forEach(line => this.removeSpacer(line));
     this.addChild(this.lastEventNode, referenceDOM);
   }
 
@@ -352,7 +352,7 @@ class LocalEventGroupView extends AbstractView {
     }
     this.lastEventNode = this.mkEventView(event, event.sourceLoc);
     range(this.lastPopulatedLineNumber + 1, event.sourceLoc.endLineNumber)
-        .forEach(line => this.removeSpacer(line)); // TODO
+        .forEach(line => this.removeSpacer(line));
     this.lastPopulatedLineNumber =
         Math.max(this.lastPopulatedLineNumber, event.sourceLoc.endLineNumber);
 
@@ -421,7 +421,7 @@ class LocalEventGroupView extends AbstractView {
     range(startLine, implView.startLine - 1)
         .forEach(lineNumber => childNodes.push(new Spacer(this, lineNumber)));
     if (childNodes.length > 0) {
-      implView.classList.add('firstInLine'); // TODO: put this in a nicer place
+      implView.classList.add('firstInLine');
     }
     childNodes.push(implView);
     const childWrapper = new Wrapper(this, ...childNodes);
