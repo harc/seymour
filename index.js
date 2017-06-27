@@ -301,7 +301,7 @@ editor.on('beforeChange', function(cmInstance, changeObj) {
   m.replaceInputRange(fromIdx, toIdx, insertedText);
 });
 
-editor.on('changes', function(cmInstance, changes) {
+function handleChanges(cmInstance, changes) {
   if (parseErrorWidget) {
     editor.removeLineWidget(parseErrorWidget);
     parseErrorWidget = undefined;
@@ -332,6 +332,12 @@ editor.on('changes', function(cmInstance, changes) {
     });
     parseErrorWidget.changed();
   }
+}
+
+const handleChangesDebounced = debounce(handleChanges, 500);
+
+editor.on('changes', function(cmInstance, changes) {
+  handleChangesDebounced(cmInstance, changes);
 });
 
 // ERRORS
