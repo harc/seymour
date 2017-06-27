@@ -139,6 +139,11 @@ const preludeAST = (function() {
       @{ this.setVar('ans', this.receiver % this.getVar('that')); }@
       return ans;
     }
+    def Number.sqrt() {
+      var ans = null;
+      @{ this.setVar('ans', Math.sqrt(this.receiver)); }@
+      return ans;
+    }
     def Number.floor() {
       var ans = null;
       @{ this.setVar('ans', Math.floor(this.receiver)); }@
@@ -147,6 +152,16 @@ const preludeAST = (function() {
     def Number.ceil() {
       var ans = null;
       @{ this.setVar('ans', Math.ceil(this.receiver)); }@
+      return ans;
+    }
+    def Number.min(other) {
+      var ans = null;
+      @{ this.setVar('ans', Math.min(this.receiver, this.getVar('other'))); }@
+      return ans;
+    }
+    def Number.max(other) {
+      var ans = null;
+      @{ this.setVar('ans', Math.max(this.receiver, this.getVar('other'))); }@
       return ans;
     }
 
@@ -214,6 +229,24 @@ const preludeAST = (function() {
       };
       return ans;
     }
+    def Array.filter(fn) {
+      var predVals = new Array(this.size());
+      var numItems = 0;
+      forEach this do: {x, i|
+        predVals.set(i, fn(x));
+        if predVals.get(i) then: { numItems = numItems + 1; };
+      };
+
+      var ans = new Array(numItems);
+      var idx = 1;
+      forEach this do: {x, i|
+        if predVals.get(i) then: {
+          ans.set(idx, x);
+          idx = idx + 1;
+        };
+      };
+      return ans;
+    }
     def Array.reduce(fn, z) {
       var acc = z;
       forEach this do: {x |
@@ -233,6 +266,30 @@ const preludeAST = (function() {
         meat = meat + x.toString();
       };
       return "[" + meat + "]";
+    }
+
+    class Dictionary;
+    def Dictionary.init(kvPairs) {
+      forEach kvPairs do: {pair |
+        var key = pair.get(1);
+        var val = pair.get(2);
+        @{ this.receiver.instVars[this.getVar('key')] = this.getVar('val'); }@
+      };
+    }
+    def Dictionary.has(key) {
+      var ans = null;
+      @{ this.setVar('ans', this.getVar('key') in this.receiver.instVars); }@
+      return ans;
+    }
+    def Dictionary.get(key) {
+      var ans = null;
+      @{ this.setVar('ans', this.receiver.instVars[this.getVar('key')]); }@
+      return ans;
+    }
+    def Dictionary.set(key, value) {
+      var ans = this.get(key);
+      @{ this.receiver.instVars[this.getVar('key')] = this.getVar('value'); }@
+      return ans;
     }
 
     def Number to: end {
