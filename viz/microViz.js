@@ -115,27 +115,31 @@ class MicroViz extends CheckedEmitter {
     const itemsOnLine = $$(this.container, '*[endLine="' + lineNumber + '"]').concat(line);
 
     itemsOnLine.forEach(item => item.style.paddingBottom = '0px');
-    const bottom = itemsOnLine
-        .map(element => element.getBoundingClientRect().bottom)
-        .reduce((x, y) => Math.max(x, y), line.getBoundingClientRect().bottom);
 
-    this.spaceLine(cmLineNumber, line, bottom);
+    const bottoms = new WeakMap();
+    itemsOnLine.forEach(element => bottoms.set(element, element.getBoundingClientRect().bottom));
+    const bottom = itemsOnLine
+        .map(item => bottoms.get(item))
+        .reduce((x, y) => Math.max(x, y), bottoms.get(line));
+
+    this.spaceLine(cmLineNumber, line, bottoms.get(line), bottom);
 
     const bgline = $(this.container, 'line[startLine="' + lineNumber + '"]');
-    this.inflate(bgline, bottom);
+    this.inflate(bgline, bottoms.get(bgline), bottom);
 
     const spacers = $$(this.container, 'spacer[endLine="' + lineNumber + '"]');
-    spacers.forEach(spacer => this.inflate(spacer, bottom));
+    spacers.forEach(spacer => this.inflate(spacer, bottoms.get(spacer), bottom));
 
     const localEvents = $$(this.container, 'event[endLine="' + lineNumber + '"]:not(.remote)');
-    localEvents.forEach(event => this.inflate(event, bottom));
+    localEvents.forEach(event => this.inflate(event, bottoms.get(event), bottom));
 
     const remoteEventGroups = $$(this.container, 'remoteEventGroup[endLine="' + lineNumber + '"]');
-    remoteEventGroups.forEach(remoteEventGroup => this.inflate(remoteEventGroup, bottom));
+    remoteEventGroups.forEach(remoteEventGroup => 
+        this.inflate(remoteEventGroup, bottoms.get(remoteEventGroup), bottom));
   }
 
-  spaceLine(cmLineNumber, line, bottomY) {
-    const paddingBottom = bottomY - line.getBoundingClientRect().bottom;
+  spaceLine(cmLineNumber, line, lineBottom, bottomY) {
+    const paddingBottom = bottomY - lineBottom;
     if (this.widgetForLine.hasOwnProperty(cmLineNumber)) {
       this.widgetForLine[cmLineNumber].node.style.height = paddingBottom;
       this.widgetForLine[cmLineNumber].changed();
@@ -146,8 +150,13 @@ class MicroViz extends CheckedEmitter {
     }
   }
 
-  inflate(element, bottomY) {
-    element.style.paddingBottom = bottomY - element.getBoundingClientRect().bottom;
+  inflate(element, elementBottom, bottomY) {
+    const currentPaddingBottom = parseInt(element.style.paddingBottom) || 0;
+    const newPaddingBottom = bottomY - elementBottom;
+    if (newPaddingBottom - currentPaddingBottom > 1 ||
+        newPaddingBottom - currentPaddingBottom < -1) {
+      element.style.paddingBottom = newPaddingBottom;
+    }
   }
 
   spacer(height) {
@@ -499,7 +508,7 @@ class LocalEventGroupView extends AbstractView {
           this.DOM.appendChild(d('br'));
         }
         this.DOM.appendChild(spacer.DOM);
-        this.microViz.fixHeightsFor(spacer);
+        // this.microViz.fixHeightsFor(spacer);
       })
   }
 

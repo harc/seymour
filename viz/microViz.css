@@ -1,4 +1,5 @@
 .microViz .CodeMirror {
+  line-height: 1.2rem;
   display: inline-block;
   min-width: 600px;
   height: auto;
@@ -18,9 +19,29 @@
 /*-------------------------------*/
 
 .microViz {
+  line-height: 1.2rem;
   display: flex;
   overflow: auto;
   padding: 10px 0;
+  position: relative;
+}
+
+.microViz microVizBackground {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  z-index: -1;
+}
+
+.microViz line {
+  display: block;
+  min-height: 1.2rem;
+  min-width: 2px;
+}
+
+.microViz line:nth-child(even) {
+  background: hsl(0, 0%, 98%);
 }
 
 .microViz microVizHolder {
@@ -33,8 +54,11 @@
 .microViz microVizDiv {
   display: inline-block;
   white-space: nowrap;
-  font-family: monospace;
-  line-height: 1.4;
+  line-height: 1.2rem;
+  padding: 4px 0; /* same as codemirror-lines */
+}
+
+.microViz microVizBackground {
   padding: 4px 0; /* same as codemirror-lines */
 }
 
@@ -45,7 +69,11 @@
 }
 
 .microViz microVizDiv spacer {
-  height: 1.2em;
+  height: 1.2rem;
+}
+
+.microViz spacer:after {
+  content: " ";
 }
 
 .microViz microVizDiv event,
@@ -78,7 +106,7 @@
 
 .microViz microVizDiv send:not([isImplementation="true"]):not([empty="true"]) {
   border-radius: 4px;
-  background: rgba(100, 149, 237, .05);
+  background: rgba(100, 149, 237, .05); /*hsla(0, 0%, 0%, 0.05);*/
   box-shadow: 1px 1px 2px #ddd;
   margin: 0 4pt;
 }
@@ -213,31 +241,11 @@
   margin: 2px;
 }
 
-.microViz {
-  position: relative;
-}
 
-.microViz microVizBackground {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 100%;
-  z-index: -1;
-}
 
-.microViz line {
-  display: block;
-  min-height: 1em;
-  min-width: 2px;
-}
-
-.microViz line:nth-child(even) {
-  background: hsl(0, 0%, 98%);
-}
-
-.microViz event:not(.lastInLine):not(:last-child):after,
+/*.microViz event:not(.lastInLine):not(:last-child):after,
 .microViz send[empty="true"]:not(.lastInLine):not([isImplementation=true]):not(:last-child):after {
     content: ', ';
     color: hsl(0, 0%, 70%);
     white-space: pre;
-}
+}*/
