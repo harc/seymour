@@ -553,7 +553,7 @@ class RemoteEventGroupView extends AbstractView {
     }
     // if we're getting rid of the first event in the group, 
     // make sure the group doesn't start with a <br> tag
-    if (!(eventView.DOM.previousSibling)) {
+    if (!(eventView.DOM.previousSibling) && eventView.DOM.nextSibling) {
       this.DOM.removeChild(eventView.DOM.nextSibling);
     }
     this.DOM.removeChild(eventView.DOM);
