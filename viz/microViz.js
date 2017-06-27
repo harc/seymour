@@ -253,7 +253,10 @@ class SendView extends AbstractView {
   addEmptySendGroup() {
     this.DOM.setAttribute('empty', true);
     this.DOM.appendChild(
-      d('remoteEventGroup', {class: 'empty'}, d('emptySendDot', {}, '▪'))
+      d('remoteEventGroup', {class: 'empty'}, 
+          d('emptySendDot', {}, '▪'),
+          ...range(this.startLine+1, this.endLine)
+              .map(line => (new Spacer(this, line)).DOM)) // space this to the full extent
     );
   }
 
