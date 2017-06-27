@@ -12,6 +12,7 @@ body {
   overflow-y: auto;
   border-bottom: 1px solid #ddd;
   font-family: "Fira Mono";
+  font-feature-settings: "liga" 0;
 }
 
 .CodeMirror {
