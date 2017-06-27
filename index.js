@@ -72,17 +72,28 @@ function focusEvent(event) {
   if (event.activationEnv.sourceLoc) {
     pathMatchers = getPathMatchers(event.activationEnv);
     microViz.setPaths(pathMatchers);
-    pathMatchers.forEach(path => microViz.addImplementation(path.env.microVizEvents));
-
-    macroViz.events.forEach(e => {
-      const nodeView = macroViz.getNodeView(e);
-      if (pathMatchers.some(path => path.env === e.activationEnv)) {
-        nodeView.DOM.classList.add('highlight-focused');
-      } else {
-        nodeView.DOM.classList.remove('highlight-focused');
-      }
+    clearMacrovizFocus();
+    pathMatchers.forEach(path => {
+      microViz.addImplementation(path.env.microVizEvents)
+      updateMacrovizFocus(path);
     });
   }
+}
+
+function updateMacrovizFocus(path) {
+  macroViz.events.forEach(e => {
+    const nodeView = macroViz.getNodeView(e);
+    if (path.env === e.activationEnv) {
+      nodeView.DOM.classList.add('highlight-focused');
+    }
+  });
+}
+
+function clearMacrovizFocus() {
+  macroViz.events.forEach(e => {
+    const nodeView = macroViz.getNodeView(e);
+    nodeView.DOM.classList.remove('highlight-focused');
+  });
 }
 
 const macroViz = new MacroViz(macroVizContainer);
@@ -254,11 +265,14 @@ function run(ast, code) {
         pathMatcher.processEvent(child, parent);
         if (pathMatcher.env) {
           microViz.addImplementation(pathMatcher.env.microVizEvents);
+          updateMacrovizFocus(pathMatcher);
         }
       });
     });
     microViz.setPaths(pathMatchers);
+    clearMacrovizFocus();
     microViz.addImplementation(pathMatchers[0].env.microVizEvents);
+    updateMacrovizFocus(pathMatchers[0]);
   }
 
   let done;
