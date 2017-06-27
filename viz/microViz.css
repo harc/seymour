@@ -149,7 +149,7 @@
 }
 
 .microViz microVizDiv event + send[empty="true"]:not(.firstInLine) {
-  margin-left: -10px;
+  margin-left: -0.3rem;
 }
 
 .microViz microVizDiv localEventGroup:nth-child(1n+2),

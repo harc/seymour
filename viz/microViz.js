@@ -262,10 +262,8 @@ class SendView extends AbstractView {
   addEmptySendGroup() {
     this.DOM.setAttribute('empty', true);
     this.DOM.appendChild(
-      d('remoteEventGroup', {class: 'empty'}, 
-          d('emptySendDot', {}, '▪'),
-          ...range(this.startLine+1, this.endLine)
-              .map(line => (new Spacer(this, line)).DOM)) // space this to the full extent
+      d('remoteEventGroup', {class: 'empty', startLine: this.startLine, endLine: this.endLine}, 
+          d('emptySendDot', {}, '▪'))
     );
   }
 
@@ -591,12 +589,22 @@ class Spacer extends AbstractView {
 class Wrapper extends AbstractView {
   constructor(parent, ...views) {
     let classes = [];
-    if (views[0].classList.contains('firstInLine')) {
+    
+    let firstInLine = false;
+    for (let view of views) {
+      if (view instanceof Spacer) { continue; }
+      if (view.classList.contains('firstInLine')) { 
+        firstInLine = true; 
+      }
+      break;
+    }
+
+    if (firstInLine) {
       classes.push('firstInLine');
     }
-    if (views[views.length - 1].classList.contains('lastInLine')) {
-      classes.push('lastInLine');
-    }
+    // if (views[views.length - 1].classList.contains('lastInLine')) {
+    //   classes.push('lastInLine');
+    // }
 
     super(parent, {
       startLineNumber: views[0].startLine,
