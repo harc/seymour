@@ -17,13 +17,14 @@ class Env {
     let visitedDeclEnv = false;
     while (env) {
       if (env.sourceLoc && event.sourceLoc &&
-          ((!(event instanceof VarAssignmentEvent) && env.sourceLoc.contains(event.sourceLoc)) ||
+          (env.sourceLoc.contains(event.sourceLoc) ||
            event instanceof VarAssignmentEvent && !visitedDeclEnv)) {
         env.maybeAdd(event);
       }
       if (event instanceof VarAssignmentEvent &&
           env === event.declEnv) {
         visitedDeclEnv = true;
+        event.visitedDeclEnv = true;
       }
       env = env.callerEnv;
     }
@@ -73,7 +74,8 @@ class Env {
     return event instanceof SendEvent ||
         event instanceof ReturnEvent ||
         event instanceof VarDeclEvent ||
-        event instanceof ShowEvent;
+        event instanceof ShowEvent ||
+        event instanceof VarAssignmentEvent && event.visitedDeclEnv;
   }
 
   shouldBubbleUp(event) {
