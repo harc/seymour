@@ -1,5 +1,9 @@
+@import url("fira/fira.css");
+
 body {
   margin: 0;
+  font-family: "Fira Sans";
+  font-size: 12px;
 }
 
 #topHalf {
@@ -7,6 +11,11 @@ body {
   width: 100vw;
   overflow-y: auto;
   border-bottom: 1px solid #ddd;
+  font-family: "Fira Mono";
+}
+
+.CodeMirror {
+  font-family: inherit;
 }
 
 #microVizContainer {
@@ -50,7 +59,6 @@ parseError {
 /* errors */
 
 #errorDiv {
-  font-family: monospace;
   color: hsl(0, 50%, 70%);
   padding: 5px;
   border-bottom: 1px solid #ddd;
