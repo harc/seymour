@@ -52,7 +52,7 @@ parseError {
 /* highlighting */
 
 .highlight-emptysend {
-  background: hsl(217, 96%, 90%);
+  background: hsl(219, 96%, 90%);
 }
 
 .highlight-def {
@@ -69,19 +69,19 @@ parseError {
 }
 
 macroVizNode.highlight-cursorOnDecl > label {
-  background-color: hsl(57, 72%, 96%) !important;
+  background-color: hsl(219, 72%, 94%) !important; /*hue 57*/
 }
 
 macroVizNode.highlight-cursorOnSend > label {
-  background-color: hsl(57, 72%, 88%) !important;
+  background-color: hsl(219, 72%, 88%) !important;
 }
 
 macroVizNode.highlight-cursorOnSelector > label {
-  background-color: hsl(57, 72%, 78%) !important;
+  background-color: hsl(219, 72%, 78%) !important;
 }
 
 macroVizNode.highlight-focused > label {
-  background-color: hsl(57, 90%, 60%) !important;
+  background-color: hsl(219, 90%, 70%) !important;
 }
 
 resultWidget {
