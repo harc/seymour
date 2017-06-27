@@ -16,7 +16,20 @@ body {
 
 #macroVizScroller {
   overflow: auto;
+  height: 100%;
+}
+
+#bottomHalf {
   height: 50vh;
+  position: relative;
+  overflow: hidden;
+}
+
+#legend {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  border: 1px solid black;
 }
 
 parseError {
@@ -51,16 +64,12 @@ parseError {
 
 /* highlighting */
 
-.highlight-emptysend {
-  background: hsl(219, 96%, 90%);
-}
-
 .highlight-def {
-  background-color: hsl(219, 85%, 97%) !important;
+  background-color: hsl(219, 85%, 94%) !important;
 }
 
 .highlight-ref {
-  background-color: hsl(219, 79%, 90%) !important;
+  background-color: hsl(219, 79%, 88%) !important;
 }
 
 .highlight-def,
@@ -76,12 +85,26 @@ macroVizNode.highlight-cursorOnSend > label {
   background-color: hsl(219, 72%, 88%) !important;
 }
 
-macroVizNode.highlight-cursorOnSelector > label {
-  background-color: hsl(219, 72%, 78%) !important;
-}
-
 macroVizNode.highlight-focused > label {
   background-color: hsl(219, 90%, 70%) !important;
+}
+
+#legend {
+  list-style-type: none;
+  padding: 10px;
+  margin: 0px;
+  margin-bottom: 10px;
+  background-color: hsl(0, 0%, 100%);
+}
+
+#legend > .definition > .swatch {
+  color: hsl(219, 72%, 94%) ;
+}
+#legend > .call > .swatch {
+  color: hsl(219, 72%, 88%) ;
+}
+#legend > .focused > .swatch {
+  color: hsl(219, 90%, 70%) ;
 }
 
 resultWidget {

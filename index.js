@@ -117,8 +117,7 @@ editor.getWrapperElement().onmouseout = e => {
     const nodeView = macroViz.getNodeView(event);
     nodeView.DOM.classList.remove(
       'highlight-cursorOnDecl',
-      'highlight-cursorOnSend',
-      'highlight-cursorOnSelector');
+      'highlight-cursorOnSend');
   });
 }
 
@@ -134,8 +133,7 @@ function highlightEventNodesAtPos(pos) {
     const nodeView = macroViz.getNodeView(event);
     nodeView.DOM.classList.remove(
       'highlight-cursorOnDecl',
-      'highlight-cursorOnSend',
-      'highlight-cursorOnSelector');
+      'highlight-cursorOnSend');
     if (event.sourceLoc && event.sourceLoc.containsIdx(idx)) {
       nodeView.DOM.classList.add('highlight-cursorOnSend');
     } else if (event.activationEnv.sourceLoc &&
@@ -200,8 +198,7 @@ microViz.addListener('mouseout', (DOMEvent, _, view) => {
     const nodeView = macroViz.getNodeView(event);
     nodeView.DOM.classList.remove(
       'highlight-cursorOnDecl',
-      'highlight-cursorOnSend',
-      'highlight-cursorOnSelector');
+      'highlight-cursorOnSend');
   });
 });
 
@@ -373,7 +370,7 @@ $(errorDiv).mousedown(e => {
 function fixHeights() {
   const usableHeight = $(window).innerHeight() - $(errorDiv).outerHeight(true);
   $(topHalf).outerHeight(usableHeight * editorsShareOfUsableHeight);
-  $(macroVizScroller).outerHeight(usableHeight - $(topHalf).outerHeight());
+  $(bottomHalf).outerHeight(usableHeight - $(topHalf).outerHeight());
 }
 
 
