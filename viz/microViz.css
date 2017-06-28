@@ -1,7 +1,7 @@
 .microViz .CodeMirror {
   line-height: 1.2rem;
   display: inline-block;
-  min-width: 600px;
+  min-width: 500px;
   height: auto;
   border-right: 1px dashed hsl(0, 0%, 80%);
 }
