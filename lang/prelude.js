@@ -214,7 +214,10 @@ const preludeAST = (function() {
       if (idx.getClass() != Number or: {idx < 1 or: {idx > this.size}}) then: {
         new IndexOutOfBounds(this, idx).throw();
       };
-      @{ this.receiver.instVars[this.getVar('idx')] = this.getVar('value'); }@
+      @{ 
+        this.receiver.instVars[this.getVar('idx')] = this.getVar('value'); 
+        this.R.assignInstVar(null, this.env, this.receiver, this.getVar('idx'), this.getVar('value'));
+      }@
     }
     def forEach Array do: fn {
       for 1 to: this.size do: {idx |
@@ -273,7 +276,10 @@ const preludeAST = (function() {
       forEach kvPairs do: {pair |
         var key = pair.get(1);
         var val = pair.get(2);
-        @{ this.receiver.instVars[this.getVar('key')] = this.getVar('val'); }@
+        @{ 
+            this.receiver.instVars[this.getVar('key')] = this.getVar('val'); 
+            this.R.assignInstVar(null, this.env, this.receiver, this.getVar('key'), this.getVar('val'));
+          }@
       };
     }
     def Dictionary.has(key) {
@@ -288,7 +294,10 @@ const preludeAST = (function() {
     }
     def Dictionary.set(key, value) {
       var ans = this.get(key);
-      @{ this.receiver.instVars[this.getVar('key')] = this.getVar('value'); }@
+      @{ 
+        this.receiver.instVars[this.getVar('key')] = this.getVar('value'); 
+        this.R.assignInstVar(null, this.env, this.receiver, this.getVar('key'), this.getVar('value'));
+      }@
       return ans;
     }
 

@@ -16,11 +16,7 @@ class Env {
     let env = this;
     let visitedDeclEnv = false;
     while (env) {
-      if (env.sourceLoc && event.sourceLoc &&
-          (env.sourceLoc.contains(event.sourceLoc) ||
-           event instanceof VarAssignmentEvent && !visitedDeclEnv)) {
-        env.maybeAdd(event);
-      }
+      env.maybeAdd(event);
       if (event instanceof VarAssignmentEvent &&
           env === event.declEnv) {
         visitedDeclEnv = true;
@@ -36,20 +32,16 @@ class Env {
       return;
     }
     const microVizEvents = this.programOrSendEventToMicroVizEvents.get(programOrSendEvent);
-    if (event instanceof SendEvent) {
+    if (event instanceof SendEvent && event.sourceLoc !== null) {
       const newMicroVizEvents = new MicroVizEvents(event, false, event.sourceLoc);
       this.programOrSendEventToMicroVizEvents.set(event, newMicroVizEvents);
       microVizEvents.add(newMicroVizEvents);
-    } else {
+    } else if (!(event instanceof SendEvent)) {
       microVizEvents.add(event);
     }
   }
 
   targetProgramOrSendEventFor(event) {
-    if (!event.sourceLoc) {
-      return null;
-    }
-
     if (event.env === this) {
       return this.programOrSendEvent;
     }
@@ -58,7 +50,7 @@ class Env {
     while (env !== this) {
       const sendEvent = env.programOrSendEvent;
       if (this.programOrSendEventToMicroVizEvents.has(sendEvent)) {
-        if (this.shouldOnlyShowWhenLocal(event)) {
+        if (this.shouldOnlyShowWhenLocal(event) && event.sourceLoc !== null) {
           return sendEvent.sourceLoc.strictlyContains(event.env.sourceLoc) ? sendEvent : null;
         } else {
           return sendEvent;
