@@ -27,6 +27,10 @@
   margin: 0;
 }
 
+.macroViz macroVizNode.error > label {
+  background: HSL(352, 52%, 59%);
+}
+
 .macroViz macroVizNode[isFocusable="false"] > label {
   background: hsl(0, 0%, 97%);
 }

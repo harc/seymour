@@ -48,6 +48,10 @@ class MacroViz extends CheckedEmitter {
   addChild(child, parent) {
     if (child instanceof SendEvent || child instanceof ProgramEvent) {
       this.nodeViews.get(parent).addChild(child);
+    } else if (child instanceof ErrorEvent) {
+      const parentView = 
+          this.nodeViews.get(parent) || this.nodeViews.get(parent.env.programOrSendEvent);
+      parentView.error();
     }
   }
 
@@ -97,5 +101,12 @@ class NodeView {
 
   collapse(collapse = true) {
     this.DOM.classList.toggle('collapsed', collapse);
+  }
+
+  error() {
+    this.DOM.classList.add('error');
+    if (this.parent && this.parent.error != null) {
+      this.parent.error();
+    }
   }
 }
