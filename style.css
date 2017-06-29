@@ -1,9 +1,14 @@
 @import url("fira/fira.css");
 
+html {
+  font-size: 13px;
+  line-height: 1.4rem;
+}
+
 body {
   margin: 0;
   font-family: "Fira Sans";
-  font-size: 12px;
+  font-size: inherit;
 }
 
 #topHalf {

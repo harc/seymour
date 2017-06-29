@@ -1,5 +1,5 @@
 .microViz .CodeMirror {
-  line-height: 1.2rem;
+  line-height: 1.4rem;
   display: inline-block;
   min-width: 500px;
   height: auto;
@@ -19,7 +19,7 @@
 /*-------------------------------*/
 
 .microViz {
-  line-height: 1.2rem;
+  line-height: inherit;
   display: flex;
   overflow: auto;
   padding: 10px 0;
@@ -36,7 +36,8 @@
 
 .microViz line {
   display: block;
-  min-height: 1.2rem;
+  line-height: inherit;
+  min-height: 1.4rem;
   min-width: 2px;
 }
 
@@ -54,7 +55,7 @@
 .microViz microVizDiv {
   display: inline-block;
   white-space: nowrap;
-  line-height: 1.2rem;
+  line-height: 1.4rem;
   padding: 4px 0; /* same as codemirror-lines */
 }
 
@@ -69,7 +70,7 @@
 }
 
 .microViz microVizDiv spacer {
-  height: 1.2rem;
+  height: 1.4rem;
 }
 
 .microViz spacer:after {
@@ -117,6 +118,7 @@
 
 .microViz microVizDiv event {
   margin: 0 5px;
+  height: 1.4rem;
 }
 
 .microViz microVizDiv send {
