@@ -13,10 +13,15 @@
   vertical-align: top;
 }
 
+.macroViz macroVizNode.collapsed > label {
+  padding: 0.5px;
+  box-shadow: 1px 1px 0px hsla(0, 0%, 0%, 0.2);
+}
+
 .macroViz macroVizNode > label {
   display: block;
   color: #555;
-  box-shadow: 1px 1px 2px hsl(0, 0%, 0%);
+  box-shadow: 1px 1px 0px hsl(0, 0%, 0%);
   padding: 4px;
   background: hsl(0, 0%, 90%);
   margin: 0;

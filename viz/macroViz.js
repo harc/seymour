@@ -81,6 +81,10 @@ class NodeView {
     this.label.onmouseover = (event) => this.macroViz.onMouseover(event, this.event);
     this.label.onmouseout = (event) => this.macroViz.onMouseout(event, this.event);
 
+    if (!this.event.activationEnv.sourceLoc) {
+      this.collapse();
+    }
+
     this.event.children.forEach(child => {
       this.addChild(child);
     });
@@ -89,5 +93,9 @@ class NodeView {
   addChild(child) {
     const childView = new NodeView(this, child);
     this.children.appendChild(childView.DOM);
+  }
+
+  collapse(collapse = true) {
+    this.DOM.classList.toggle('collapsed', collapse);
   }
 }
