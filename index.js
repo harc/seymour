@@ -290,7 +290,10 @@ function run(ast, code) {
   try {
     done = interpreter.runForMillis(30);
   } catch (e) {
-    R.error(R.currentProgramOrSendEvent.sourceLoc, R.currentProgramOrSendEvent.env, e.toString());
+    const activationEnv = R.currentProgramOrSendEvent.activationEnv;
+    R.error(
+      activationEnv ? null : R.currentProgramOrSendEvent.sourceLoc, 
+      activationEnv || R.currentProgramOrSendEvent.env, e.toString());
     displayError(e.toString());
     done = true;
   }
