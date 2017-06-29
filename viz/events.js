@@ -169,3 +169,12 @@ class ShowEvent extends Event {
 
   toMicroVizString() { return this.string; }
 }
+
+class ErrorEvent extends Event {
+  constructor(sourceLoc, env, errorString) {
+    super(sourceLoc, env);
+    this.errorString = errorString;
+  }
+
+  toMicroVizString() { return '▨'; }
+}

@@ -631,6 +631,9 @@ class EventView extends AbstractView {
     super(parent, sourceLoc, classes);
     this.event = event;
     this.model = event;
+
+    this.attributes.eventType = event.constructor.name;
+
     this.render();
 
     this.microViz.setEventView(this.event, this);

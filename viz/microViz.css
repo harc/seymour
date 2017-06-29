@@ -77,6 +77,10 @@
   content: " ";
 }
 
+.microViz microVizDiv event[eventtype="ErrorEvent"] {
+  color: HSL(352, 52%, 59%);
+}
+
 .microViz microVizDiv event,
 .microViz microVizDiv localEventGroup,
 .microViz microVizDiv remoteEventGroup,

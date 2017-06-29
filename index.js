@@ -290,9 +290,9 @@ function run(ast, code) {
   try {
     done = interpreter.runForMillis(30);
   } catch (e) {
+    R.error(R.currentProgramOrSendEvent.sourceLoc, R.currentProgramOrSendEvent.env, e.toString());
     displayError(e.toString());
     done = true;
-  } finally {
   }
 
   if (done) {
