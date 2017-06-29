@@ -241,6 +241,16 @@ let interpreter;
 let R;
 let timeoutId;
 
+let running = false;
+function toggleRunning(optFlag = null) {
+  if (optFlag !== null) {
+    running = optFlag;
+  } else {
+    running = !running;
+  }
+  workingIndicator.style.color = running ? 'red' : 'black';
+}
+
 function run(ast, code) {
   if (arguments.length === 2) {
     clearError();
@@ -276,16 +286,19 @@ function run(ast, code) {
   }
 
   let done;
+  toggleRunning(true);
   try {
     done = interpreter.runForMillis(30);
   } catch (e) {
     displayError(e.toString());
     done = true;
+  } finally {
   }
 
   if (done) {
     timeoutId = null;
     console.log('(done)');
+    toggleRunning(false);
   } else {
     timeoutId = setTimeout(run, 0);
   }
