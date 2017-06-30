@@ -45,12 +45,12 @@ microViz.addListener('mouseover', (_, event, view) => {
     codeClearDef();
     codeHighlightDef(event.activationEnv.sourceLoc);
 
-    macroVizClearAllRef();
-    macroVizHighlightRef(event);
     codeClearRef();
     codeHighlightRef(event.sourceLoc);
     codeClearResultWidget();
     codeAddResultWidget(event);
+    macroVizClearAllRef();
+    macroVizHighlightRef(event);
 
     // TODO: may want to highlight more things, but this is enough for now
   }
@@ -69,6 +69,7 @@ microViz.addListener('mouseout', (_, event, view) => {
 
 // TODO: this is gonna need some serious color work to be sensible
 editor.getWrapperElement().onmousemove = e => {
+  const highlightCode = e.getModifierState('Meta');
   const pos = editor.coordsChar({left: e.pageX, top: e.pageY});
   
   const event = mostSpecificEventContaining(pos);
@@ -76,15 +77,15 @@ editor.getWrapperElement().onmousemove = e => {
 
   macroVizClearAllDef();
   macroVizHighlightDefsAt(pos);
-  if (defSourceLoc) {
-    codeClearDef();
+  codeClearDef();
+  if (highlightCode && defSourceLoc) {
     codeHighlightDef(defSourceLoc);
   }
   
   macroVizClearAllRefColors();
   macroVizHighlightRefsAt(pos, event);
-  if (event) {
-    codeClearRef();
+  codeClearRef();
+  if (highlightCode && event) {
     codeHighlightRef(event.sourceLoc);
   }
 }
@@ -292,12 +293,15 @@ function codeHighlight(sourceLoc, highlightType) {
   }
   const startPos = editor.doc.posFromIndex(sourceLoc.startPos);
   const endPos = editor.doc.posFromIndex(sourceLoc.endPos);
-  markers[highlightType] = editor.doc.markText(startPos, endPos, {className: 'highlight-' + highlightType});
+  markers[highlightType] = editor.doc.markText(startPos, endPos, {
+    className: 'highlight-' + highlightType,
+    clearOnEnter: true
+  });
   return markers[highlightType];
 }
 
 function codeClear(highlightType) {
-  if (markers[highlightType]) {
+  if (markers[highlightType] != null) {
     markers[highlightType].clear();
     markers[highlightType] = null;
   }
