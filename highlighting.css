@@ -2,8 +2,8 @@
   --hover-color       : hsl(0, 0%, 80%);
   --focus-color       : hsl(219, 90%, 65%);
   /* TODO: tune these colors */
-  --def-color         : hsl(219, 72%, 85%);
-  --ref-color         : hsl(219, 80%, 80%);
+  --def-color         : hsl(219, 72%, 90%);
+  --ref-color         : hsl(219, 80%, 85%);
   --ref-specific-color: hsl(219, 80%, 75%);
 
   --widget-background-color: hsl(217, 96%, 95%);
