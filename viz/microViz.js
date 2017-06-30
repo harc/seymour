@@ -39,7 +39,9 @@ class MicroViz extends CheckedEmitter {
     this.currentPathIdx = 0;
 
     Object.keys(this.widgetForLine)
-      .forEach(line => this.widgetForLine[line].clear());
+      .forEach(line => {
+        this.widgetForLine[line].clear();
+      });
     this.widgetForLine = {};
     this.microVizParent.innerHTML = '';
 
