@@ -221,9 +221,13 @@ class SendView extends AbstractView {
     this.numGroups = 0;
     this.eventGroups = [];
 
-    if (this.microVizEvents.isImplementation) {
+    if (this.isImplementation) {
       // parent needs to know about this view before it renders
       this.microViz.setImplementation(this);
+    }
+
+    if (!this.isImplementation) {
+      this.attributes.title = this.microVizEvents.programOrSendEvent.toDetailString();
     }
 
     this.render();

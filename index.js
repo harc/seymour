@@ -1,13 +1,13 @@
 "use strict";
 
+// TODO: factor out some of this UI logic
+
 const DEBUG = false;
 console.debug = function(...args) {
   if (DEBUG) {
     console.log(...args);
   }
 };
-
-const microViz = new MicroViz(microVizContainer);
 
 class PathMatcher {
   constructor(path, env = null) {
@@ -34,8 +34,6 @@ class PathMatcher {
     }
   }
 }
-
-let pathMatchers = null;
 
 function getPathMatchers(activationEnv) {
   const pathMatchers = [];
@@ -64,175 +62,6 @@ function getPath(activationEnv) {
   }
   path.reverse();
   return path;
-}
-
-// SETUP AND HIGHLIGHT
-
-function focusEvent(event) {
-  if (event.activationEnv.sourceLoc) {
-    pathMatchers = getPathMatchers(event.activationEnv);
-    microViz.setPaths(pathMatchers);
-    clearMacrovizFocus();
-    pathMatchers.forEach(path => {
-      microViz.addImplementation(path.env.microVizEvents)
-      updateMacrovizFocus(path);
-    });
-  }
-}
-
-function updateMacrovizFocus(path) {
-  macroViz.events.forEach(e => {
-    const nodeView = macroViz.getNodeView(e);
-    if (path.env === e.activationEnv) {
-      nodeView.DOM.classList.add('highlight-focused');
-    }
-  });
-}
-
-function clearMacrovizFocus() {
-  macroViz.events.forEach(e => {
-    const nodeView = macroViz.getNodeView(e);
-    nodeView.DOM.classList.remove('highlight-focused');
-  });
-}
-
-const macroViz = new MacroViz(macroVizContainer);
-macroViz.addListener('click', (__, event, _) => focusEvent(event));
-
-let defMarker = null;
-let refMarker = null;
-macroViz.addListener('mouseover', (__, event, _) => {
-  if (event instanceof SendEvent) {
-    defMarker = highlightSourceLoc(event.activationEnv.sourceLoc, 'def');
-  }
-  refMarker = highlightSourceLoc(event.sourceLoc, 'ref');
-});
-macroViz.addListener('mouseout', (__, event, _) => {
-  if (refMarker) { refMarker.clear(); }
-  if (defMarker) { defMarker.clear(); }
-});
-
-const editor = microViz.editor;
-editor.setOption('lineNumbers', true);
-
-editor.getWrapperElement().onmousemove = e => {
-  clearDefMarker();
-  clearRefMarker();
-  clearResultWidget();
-  const pos = editor.coordsChar({left: e.pageX, top: e.pageY});
-  highlightEventNodesAtPos(pos);
-}
-
-editor.getWrapperElement().onmouseout = e => {
-  macroViz.events.forEach(event => {
-    const nodeView = macroViz.getNodeView(event);
-    nodeView.DOM.classList.remove(
-      'highlight-cursorOnDecl',
-      'highlight-cursorOnSend');
-  });
-}
-
-editor.on('cursorActivity', _ => {
-  const pos = editor.doc.getCursor('head');
-  highlightEventNodesAtPos(pos);
-});
-
-function highlightEventNodesAtPos(pos) {
-  const idx = editor.doc.indexFromPos(pos);
-  macroViz.events.forEach(event => {
-    if (!(event instanceof SendEvent)) return;
-    const nodeView = macroViz.getNodeView(event);
-    nodeView.DOM.classList.remove(
-      'highlight-cursorOnDecl',
-      'highlight-cursorOnSend');
-    if (event.sourceLoc && event.sourceLoc.containsIdx(idx)) {
-      nodeView.DOM.classList.add('highlight-cursorOnSend');
-    } else if (event.activationEnv.sourceLoc &&
-        event.activationEnv.sourceLoc.containsIdx(idx)) {
-      nodeView.DOM.classList.add('highlight-cursorOnDecl');
-    }
-  })
-
-}
-
-let resultWidget = null;
-
-microViz.addListener('mouseover', (DOMEvent, event, view) => {
-  if (DOMEvent.getModifierState('Meta')) console.log('meta');
-  if (event instanceof SendEvent && !view.isImplementation) {
-    view.DOM.setAttribute('title', event.toDetailString());
-
-    clearResultWidget();
-    clearDefMarker();
-    clearRefMarker();
-
-    defMarker = highlightSourceLoc(event.activationEnv.sourceLoc, 'def');
-    refMarker = highlightSourceLoc(event.sourceLoc, 'ref');
-    highlightEventNodesAtPos(editor.posFromIndex(event.sourceLoc.startPos));
-
-    resultWidget = addResultWidget(
-        event.sourceLoc,
-        event.hasOwnProperty('returnValue') ? event._valueString(event.returnValue) : '?');
-  }
-});
-
-microViz.addListener('click', (DOMEvent, event, view) => {
-  if (DOMEvent.getModifierState('Meta') && event instanceof SendEvent && !view.isImplementation) {
-    focusEvent(event);
-  }
-})
-
-function clearResultWidget() {
-  if (resultWidget) {
-    $(resultWidget).remove();
-  }
-}
-
-function clearDefMarker () {
-  if (defMarker) {
-    defMarker.clear();
-  }
-}
-
-function clearRefMarker () {
-  if (refMarker) {
-    refMarker.clear();
-  }
-}
-
-microViz.addListener('mouseout', (DOMEvent, _, view) => {
-  clearResultWidget();
-  clearDefMarker();
-  clearRefMarker();
-  
-  macroViz.events.forEach(event => {
-    const nodeView = macroViz.getNodeView(event);
-    nodeView.DOM.classList.remove(
-      'highlight-cursorOnDecl',
-      'highlight-cursorOnSend');
-  });
-});
-
-function highlightSourceLoc(sourceLoc, highlightType) {
-  if (!sourceLoc) {
-    return;
-  }
-  const startPos = editor.doc.posFromIndex(sourceLoc.startPos);
-  const endPos = editor.doc.posFromIndex(sourceLoc.endPos);
-  return editor.doc.markText(startPos, endPos, {className: 'highlight-' + highlightType});
-}
-
-// RESULT WIDGETS
-
-function addResultWidget(sourceLoc, resultString) {
-  if (!sourceLoc) {
-    return;
-  }
-  const startPos = editor.doc.posFromIndex(sourceLoc.startPos);
-  const endPos = editor.doc.posFromIndex(sourceLoc.endPos);
-  const widget = d('resultWidget', {}, '⇒ ' + resultString);
-  editor.addWidget({line: endPos.line, ch: startPos.ch}, widget);
-  return widget;
 }
 
 // RUN INTERPRETER
@@ -274,15 +103,13 @@ function run(ast, code) {
         }
         pathMatcher.processEvent(child, parent);
         if (pathMatcher.env) {
-          microViz.addImplementation(pathMatcher.env.microVizEvents);
-          updateMacrovizFocus(pathMatcher);
+          focusPath(pathMatcher);
         }
       });
     });
-    microViz.setPaths(pathMatchers);
-    clearMacrovizFocus();
-    microViz.addImplementation(pathMatchers[0].env.microVizEvents);
-    updateMacrovizFocus(pathMatchers[0]);
+
+    clearFocus();
+    focusPath(pathMatchers[0]);
   }
 
   let done;
@@ -350,7 +177,7 @@ function handleChanges(cmInstance, changes) {
   }
 }
 
-const handleChangesDebounced = debounce(handleChanges, 500);
+const handleChangesDebounced = _.debounce(handleChanges, 500);
 
 editor.on('changes', function(cmInstance, changes) {
   handleChangesDebounced(cmInstance, changes);

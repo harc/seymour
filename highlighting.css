@@ -1,0 +1,98 @@
+:root {
+  --hover-color       : hsl(0, 0%, 80%);
+  --focus-color       : hsl(219, 90%, 65%);
+  /* TODO: tune these colors */
+  --def-color         : hsl(219, 72%, 85%);
+  --ref-color         : hsl(219, 80%, 80%);
+  --ref-specific-color: hsl(219, 80%, 75%);
+
+  --widget-background-color: hsl(217, 96%, 95%);
+}
+
+body {
+  background: var(--test);
+}
+
+temp {
+  color: HSL(217, 71%, 66%);
+  color: HSL(85, 51%, 64%);
+  color: HSL(43, 91%, 69%);
+  color: HSL(356, 64%, 62%);
+  color: HSL(276, 21%, 49%);
+
+  color: hsl(57, 90%, 70%); /* old highlight hue */
+}
+
+/* macroViz */
+
+/* TODO: consider keeping cursorOnDecl, cursorOnSend */
+
+#macroVizContainer macroVizNode[isFocusable="true"] > label:hover {
+  background: var(--hover-color);
+}
+
+#macroVizContainer macroVizNode.highlight-focus > label {
+  background-color: var(--focus-color) !important;
+}
+
+#macroVizContainer macroVizNode.highlight-def > label {
+  background-color: var(--def-color) !important;
+}
+
+#macroVizContainer macroVizNode.highlight-ref > label {
+  background-color: var(--ref-color) !important;
+}
+
+#macroVizContainer macroVizNode.highlight-ref-specific > label {
+  background-color: var(--ref-specific-color) !important;
+}
+
+/* TODO: ref-colors */
+
+/* microViz */
+
+
+/* code */
+
+.CodeMirror *[class*=' highlight-'] {
+  box-shadow: 1px 1px 0px 0px #aaa;
+}
+
+.CodeMirror .highlight-def {
+  background-color: var(--def-color) !important;
+}
+
+.CodeMirror .highlight-ref {
+  background-color: var(--ref-color) !important;
+}
+
+resultWidget {
+  display: block;
+  z-index: 2000;
+  border-radius: 2pt;
+  padding: 0 4pt;
+  margin-top: 4px;
+  background: var(--widget-background-color);
+  box-shadow: 1px 1px 4px hsl(0, 0%, 30%);
+}
+
+
+/* other */
+
+#legend {
+  list-style-type: none;
+  padding: 10px;
+  margin: 0px;
+  margin-bottom: 10px;
+  background-color: hsl(0, 0%, 100%);
+}
+
+#legend > .definition > .swatch {
+  color: var(--def-color) ;
+}
+#legend > .call > .swatch {
+  color: var(--ref-color) ;
+}
+#legend > .focused > .swatch {
+  color: var(--focus-color) ;
+}
