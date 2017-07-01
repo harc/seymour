@@ -92,7 +92,7 @@ editor.getWrapperElement().onmousemove = e => {
 
   codeClearFocusWidget(event && event.sourceLoc)
   if (highlightCode && event && event.activationEnv.sourceLoc) {
-    codeAddFocusWidget(event.sourceLoc, selectableCalls);
+    codeAddFocusWidget(event.sourceLoc, pos, selectableCalls);
   }
   
 }
@@ -234,7 +234,7 @@ var focusSourceLoc = null;
 // TODO: maintain focuswidget on hover
 // TODO: give clear a timeout
 // TODO: maintain highlight on focus widget hover
-function codeAddFocusWidget(sourceLoc, calls) {
+function codeAddFocusWidget(sourceLoc, mousePos, calls) {
   if (!sourceLoc) {
     return;
   }
@@ -247,7 +247,7 @@ function codeAddFocusWidget(sourceLoc, calls) {
   const endPos = editor.doc.posFromIndex(sourceLoc.endPos);
 
   const widget = renderFocusWidget(calls);
-  editor.addWidget({line: endPos.line, ch: startPos.ch}, widget);
+  editor.addWidget({line: endPos.line, ch: mousePos.ch}, widget);
   focusWidget = widget;
   selectableCalls = calls;
   focusSourceLoc = sourceLoc;
@@ -289,6 +289,9 @@ function codeClearFocusWidget(sourceLoc) {
   if (focusWidget && 
       (sourceLoc === null || !sourceLoc.equals(focusSourceLoc))) { 
     $(focusWidget).remove(); 
+    focusWidget = null;
+    selectableCalls = null;
+    focusSourceLoc = null;
   }
 }
 
