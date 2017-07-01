@@ -67,6 +67,7 @@ microViz.addListener('mouseout', (_, event, view) => {
 // code
 // ----
 
+
 // TODO: this is gonna need some serious color work to be sensible
 editor.getWrapperElement().onmousemove = e => {
   const highlightCode = e.getModifierState('Meta');
@@ -83,11 +84,17 @@ editor.getWrapperElement().onmousemove = e => {
   }
   
   macroVizClearAllRefColors();
-  macroVizHighlightRefsAt(pos, event);
+  let selectableCalls = macroVizHighlightRefsAt(pos, event, highlightCode);
   codeClearRef();
   if (highlightCode && event) {
     codeHighlightRef(event.sourceLoc);
   }
+
+  codeClearFocusWidget(event && event.sourceLoc)
+  if (highlightCode && event && event.activationEnv.sourceLoc) {
+    codeAddFocusWidget(event.sourceLoc, selectableCalls);
+  }
+  
 }
 // TODO: hover + click - macro, micro focus
 
@@ -158,23 +165,35 @@ function macroVizHighlightDefsAt(pos) {
   });
 }
 
+const NUM_COLORS = 8;
+const COLOR_LETTERS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 function macroVizHighlightRefsAt(
     pos, mostSpecificEvent = null, colorDifferentCalls = false) {
+  // if (colorDifferentCalls) debugger;
   const idx = editor.doc.indexFromPos(pos);
 
+  let numSeen = 0;
+  const selectableCalls = [];
   macroViz.events.forEach(event => {
     if (!(event instanceof SendEvent)) return;
     if (!event.sourceLoc) return;
 
     if (mostSpecificEvent &&
         event.sourceLoc.equals(mostSpecificEvent.sourceLoc)) {
-      // TODO: color different calls
-      macroVizHighlightRefSpecific(event);
+      if (colorDifferentCalls && numSeen < NUM_COLORS) {
+        macroVizHighlight(event, `ref-${numSeen + 1}`);
+        selectableCalls.push(event);
+        numSeen++;
+      } else {
+        macroVizHighlightRefSpecific(event);
+      }
     } else if (event.sourceLoc.containsIdx(idx)) {
       if (event instanceof ProgramEvent) debugger;
       macroVizHighlightRef(event);
     }
   });
+
+  return selectableCalls;
 }
 
 // UI utils
@@ -204,6 +223,72 @@ function codeAddResultWidget(event, sourceLoc = event.sourceLoc, value = null) {
 function codeClearResultWidget() {
   if (resultWidget) { 
     $(resultWidget).remove(); 
+  }
+}
+
+
+var focusWidget = null;
+var selectableCalls = null;
+var focusSourceLoc = null;
+
+// TODO: maintain focuswidget on hover
+// TODO: give clear a timeout
+// TODO: maintain highlight on focus widget hover
+function codeAddFocusWidget(sourceLoc, calls) {
+  if (!sourceLoc) {
+    return;
+  }
+
+  if (focusSourceLoc && sourceLoc.equals(focusSourceLoc)) {
+    return;
+  }
+
+  const startPos = editor.doc.posFromIndex(sourceLoc.startPos);
+  const endPos = editor.doc.posFromIndex(sourceLoc.endPos);
+
+  const widget = renderFocusWidget(calls);
+  editor.addWidget({line: endPos.line, ch: startPos.ch}, widget);
+  focusWidget = widget;
+  selectableCalls = calls;
+  focusSourceLoc = sourceLoc;
+
+  return widget;
+}
+
+function renderFocusWidget(calls) {
+  const ans = d('focusWidget', {},
+      ...calls.map((call, idx) => d('call', {class: `index-${idx}`}, '●')));
+
+  ans.onmousemove = e => {
+    calls.forEach((c, i) => {
+      macroVizClear(c, `ref-${i+1}`)
+      macroVizHighlight(c, `ref-${i+1}`)
+    });
+    e.stopPropagation()
+  };
+
+  ans.onmouseout = e => e.stopPropagation();
+
+  calls.forEach((call, idx) => {
+    const callDOM = ans.children[idx];
+    callDOM.onmouseover = e => {
+      calls.forEach((c, i) => {
+        macroVizClear(c, `ref-${i+1}`)
+      });
+      macroVizHighlight(call, `ref-${idx+1}`);
+    };
+
+    callDOM.onmousemove = e => e.stopPropagation();
+
+    callDOM.onclick = e => focusLexicalStack(call);
+  });
+  return ans;
+}
+
+function codeClearFocusWidget(sourceLoc) {
+  if (focusWidget && 
+      (sourceLoc === null || !sourceLoc.equals(focusSourceLoc))) { 
+    $(focusWidget).remove(); 
   }
 }
 
