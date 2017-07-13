@@ -9,66 +9,153 @@ console.debug = function(...args) {
   }
 };
 
-class PathMatcher {
-  constructor(path, env = null) {
-    this.path = path;
-    this.idx = env ? path.length : 0;
-    this.envAtIdx = env;
+class Seymour extends CheckedEmitter {
+  // TODO: allow passing in either micro or macro as null
+  // TODO: flag for highlighting
+  constructor(microVizContainer, macroVizContainer) {
+    super(); 
+    this.registerEvent('codeChanged', 'code');
+    this.registerEvent('run', 'ast', 'code');
+    this.registerEvent('error', 'e');
+    this.registerEvent('done', 'ast', 'code');
+
+    // setup
+    this.microViz = new MicroViz(microVizContainer);
+    this.editor = this.microViz.editor;
+    this.editor.setOption('lineNumbers', true);
+
+    this.macroViz = new MacroViz(macroVizContainer);
+
+    this.pathMatchers = null;
+
+    // highlighting
+    this.highlighting = new Highlighting(this);
+
+    // tie the knot
+    this.interpreter = null;
+    this.R = null;
+    this.timeoutId = null;
+    this.running = false;
+
+    this.m = seymourGrammar.matcher();
+
+    this.parseErrorWidget = null;
+
+    this.editor.on('beforeChange', (cmInstance, changeObj) => {
+      var insertedText = changeObj.text.join('\n');
+      var fromIdx = this.editor.indexFromPos(changeObj.from);
+      var toIdx = this.editor.indexFromPos(changeObj.to);
+      this.m.replaceInputRange(fromIdx, toIdx, insertedText);
+    });
+
+    this.editor.on('changes', (cmInstance, changes) => {
+      this.handleChangesDebounced(cmInstance, changes);
+    });
   }
 
-  reset(globalEnv) {
-    this.idx = 0;
-    this.envAtIdx = globalEnv;
-  }
+  run(ast, code = null) {
+    if (code !== null) {
+      this.emit('codeChanged', code);
+      if (this.timeoutId !== null) {
+        clearTimeout(this.timeoutId);
+      }
+      Obj.nextId = 0;
+      this.R = new EventRecorder();
+      this.macroViz.setEventRecorder(this.R);
+      this.interpreter = new Interpreter(ast.sourceLoc, code, this.R);
+      if (this.pathMatchers === null) {
+        this.pathMatchers = getPathMatchers(this.interpreter.global.env);
+      }
+      this.pathMatchers.forEach(pathMatcher => pathMatcher.reset(this.interpreter.global.env));
 
-  get env() {
-     return this.idx === this.path.length ? this.envAtIdx : null;
-  }
+      this.R.addListener('addChild', (child, parent) => {
+        this.pathMatchers.forEach(pathMatcher => {
+          if (pathMatcher.env) {
+            // nothing to do
+            return;
+          }
+          pathMatcher.processEvent(child, parent);
+          if (pathMatcher.env) {
+            focusPath(pathMatcher);
+          }
+        });
+      });
 
-  processEvent(child, parent) {
-    console.assert(this.idx < this.path.length);
-    if (this.envAtIdx === parent.activationEnv &&
-        child.activationPathToken === this.path[this.idx]) {
-      this.idx++;
-      this.envAtIdx = child.activationEnv;
+      this.highlighting.clearFocus();
+      this.highlighting.focusPath(this.pathMatchers[0]);
     }
-  }
-}
 
-function getPathMatchers(activationEnv) {
-  const pathMatchers = [];
-  let env = activationEnv;
-  while (env) {
-    pathMatchers.unshift(getPathMatcher(env));
-    env = env.parentEnv;
-  }
-  return pathMatchers;
-}
+    let done;
+    this.emit('run', ast, code);
+    try {
+      done = this.interpreter.runForMillis(30);
+    } catch (e) {
+      const activationEnv = this.R.currentProgramOrSendEvent.activationEnv;
+      this.R.error(
+        activationEnv ? null : R.currentProgramOrSendEvent.sourceLoc, 
+        activationEnv || R.currentProgramOrSendEvent.env, e.toString());
+      this.emit('error', e);
+      done = true;
+    }
 
-function getPathMatcher(activationEnv) {
-  return new PathMatcher(getPath(activationEnv), activationEnv);
-}
-
-function getPath(activationEnv) {
-  const path = [];
-  while (true) {
-    const callerEnv = activationEnv.callerEnv;
-    if (callerEnv) {
-      path.push(activationEnv.programOrSendEvent.activationPathToken);
-      activationEnv = callerEnv.programOrSendEvent.activationEnv;
+    if (done) {
+      this.emit('done', ast, code);
+      this.timeoutId = null;
+      console.log('(done)');
     } else {
-      break;
+      this.timeoutId = setTimeout(() => this.run(), 0);
     }
   }
-  path.reverse();
-  return path;
+
+  handleChanges(cmInstance, changes) {
+    if (this.parseErrorWidget) {
+      this.editor.removeLineWidget(this.parseErrorWidget);
+      this.parseErrorWidget = undefined;
+    }
+
+    syntaxHighlight(this.editor, this.m);
+
+    const r = this.m.match();
+    if (r.succeeded()) {
+      // console.clear();
+      const ast = parse(r);
+      console.debug('ast', ast);
+      const code = preludeAST.toInstruction(ast.toInstruction(new IDone()));
+      console.debug('code', code);
+      this.run(ast, code);
+    } else {
+      const expected = r.getExpectedText();
+      const pos = this.editor.doc.posFromIndex(r.getRightmostFailurePosition());
+      const error = document.createElement('parseError');
+      error.innerText = spaces(pos.ch) + '^\nExpected: ' + expected;
+      parseErrorWidget = this.editor.addLineWidget(pos.line, error);
+      $(error).hide().delay(2000).slideDown().queue(() => {
+        if (parseErrorWidget) {
+          this.parseErrorWidget.changed();
+        }
+      });
+      this.parseErrorWidget.changed();
+    }
+  }
 }
 
-// RUN INTERPRETER
+Seymour.prototype.handleChangesDebounced = _.debounce(Seymour.prototype.handleChanges, 500);
 
-let interpreter;
-let R;
-let timeoutId;
+// -----
+
+const S = new Seymour(microVizContainer, macroVizContainer);
+
+S.addListener('codeChanged', code => {
+  clearError();
+  localStorage.setItem('seymour-program', S.editor.getValue());
+});
+
+S.addListener('run', (_, __) => toggleRunning(true));
+
+S.addListener('error', e => displayError(e.toString()));
+
+S.addListener('done', (_, __) => toggleRunning(false));
+
 
 let running = false;
 function toggleRunning(optFlag = null) {
@@ -79,109 +166,6 @@ function toggleRunning(optFlag = null) {
   }
   workingIndicator.style.color = running ? 'red' : 'black';
 }
-
-function run(ast, code) {
-  if (arguments.length === 2) {
-    clearError();
-    if (timeoutId !== null) {
-      clearTimeout(timeoutId);
-    }
-    Obj.nextId = 0;
-    R = new EventRecorder();
-    macroViz.setEventRecorder(R);
-    interpreter = new Interpreter(ast.sourceLoc, code, R);
-    if (pathMatchers === null) {
-      pathMatchers = getPathMatchers(interpreter.global.env);
-    }
-    pathMatchers.forEach(pathMatcher => pathMatcher.reset(interpreter.global.env));
-
-    R.addListener('addChild', (child, parent) => {
-      pathMatchers.forEach(pathMatcher => {
-        if (pathMatcher.env) {
-          // nothing to do
-          return;
-        }
-        pathMatcher.processEvent(child, parent);
-        if (pathMatcher.env) {
-          focusPath(pathMatcher);
-        }
-      });
-    });
-
-    clearFocus();
-    focusPath(pathMatchers[0]);
-  }
-
-  let done;
-  toggleRunning(true);
-  try {
-    done = interpreter.runForMillis(30);
-  } catch (e) {
-    const activationEnv = R.currentProgramOrSendEvent.activationEnv;
-    R.error(
-      activationEnv ? null : R.currentProgramOrSendEvent.sourceLoc, 
-      activationEnv || R.currentProgramOrSendEvent.env, e.toString());
-    displayError(e.toString());
-    done = true;
-  }
-
-  if (done) {
-    timeoutId = null;
-    console.log('(done)');
-    toggleRunning(false);
-  } else {
-    timeoutId = setTimeout(run, 0);
-  }
-}
-
-let parseErrorWidget;
-const m = seymourGrammar.matcher();
-
-editor.on('beforeChange', function(cmInstance, changeObj) {
-  var insertedText = changeObj.text.join('\n');
-  var fromIdx = editor.indexFromPos(changeObj.from);
-  var toIdx = editor.indexFromPos(changeObj.to);
-  m.replaceInputRange(fromIdx, toIdx, insertedText);
-});
-
-function handleChanges(cmInstance, changes) {
-  if (parseErrorWidget) {
-    editor.removeLineWidget(parseErrorWidget);
-    parseErrorWidget = undefined;
-  }
-
-  localStorage.setItem('seymour-program', editor.getValue());
-
-  syntaxHighlight(editor, m);
-
-  const r = m.match();
-  if (r.succeeded()) {
-    // console.clear();
-    const ast = parse(r);
-    console.debug('ast', ast);
-    const code = preludeAST.toInstruction(ast.toInstruction(new IDone()));
-    console.debug('code', code);
-    run(ast, code);
-  } else {
-    const expected = r.getExpectedText();
-    const pos = editor.doc.posFromIndex(r.getRightmostFailurePosition());
-    const error = document.createElement('parseError');
-    error.innerText = spaces(pos.ch) + '^\nExpected: ' + expected;
-    parseErrorWidget = editor.addLineWidget(pos.line, error);
-    $(error).hide().delay(2000).slideDown().queue(() => {
-      if (parseErrorWidget) {
-        parseErrorWidget.changed();
-      }
-    });
-    parseErrorWidget.changed();
-  }
-}
-
-const handleChangesDebounced = _.debounce(handleChanges, 500);
-
-editor.on('changes', function(cmInstance, changes) {
-  handleChangesDebounced(cmInstance, changes);
-});
 
 // ERRORS
 
@@ -247,4 +231,4 @@ for 1 to: 10 do: {x |
   sum = sum + x;
 };
 sum.println();`;
-editor.setValue(localStorage.getItem('seymour-program') || sampleProgram);
+S.editor.setValue(localStorage.getItem('seymour-program') || sampleProgram);
