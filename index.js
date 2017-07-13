@@ -76,7 +76,7 @@ class Seymour extends CheckedEmitter {
           }
           pathMatcher.processEvent(child, parent);
           if (pathMatcher.env) {
-            focusPath(pathMatcher);
+            this.highlighting.focusPath(pathMatcher);
           }
         });
       });
@@ -128,9 +128,9 @@ class Seymour extends CheckedEmitter {
       const pos = this.editor.doc.posFromIndex(r.getRightmostFailurePosition());
       const error = document.createElement('parseError');
       error.innerText = spaces(pos.ch) + '^\nExpected: ' + expected;
-      parseErrorWidget = this.editor.addLineWidget(pos.line, error);
+      this.parseErrorWidget = this.editor.addLineWidget(pos.line, error);
       $(error).hide().delay(2000).slideDown().queue(() => {
-        if (parseErrorWidget) {
+        if (this.parseErrorWidget) {
           this.parseErrorWidget.changed();
         }
       });

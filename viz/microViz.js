@@ -427,7 +427,7 @@ class LocalEventGroupView extends AbstractView {
     nodesToWrap.forEach(node => this.removeChildOrSpacer(node));
 
     const parentWrapper = new Wrapper(this, ...nodesToWrap);
-    if (implView.startLine > 1) {
+    if (implView.startLine > 1 && nodesToWrap.every(n => n instanceof Spacer)) {
       parentWrapper.classList.add('firstInLine');
     }
     this.addChildWithoutTracking(parentWrapper, referenceDOM);
@@ -441,6 +441,7 @@ class LocalEventGroupView extends AbstractView {
     }
     childNodes.push(implView);
     const childWrapper = new Wrapper(this, ...childNodes);
+    childWrapper.classList.remove('firstInLine');
     this.addChildWithoutTracking(childWrapper, referenceDOM);
   } 
 

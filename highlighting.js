@@ -38,8 +38,9 @@ class Highlighting {
   // ============
 
   registerListenersMacroViz() {
-    this.macroViz.addListener('click', (__, event, _) => 
-        this.focusLexicalStack(event));
+    this.macroViz.addListener('click', (__, event, _) => {
+        this.focusLexicalStack(event)
+    });
 
     this.macroViz.addListener('mouseover', (__, event, _) => {
       this.macroVizClearAllHover();
