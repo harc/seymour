@@ -2,13 +2,14 @@
 
 // toplevel class. persists across focuses. manages codemirror
 class MicroViz extends CheckedEmitter {
-  constructor(container) {
+  constructor(container, enableMicroViz) {
     super();
     this.registerEvent('click', 'DOMEvent', 'event', 'eventView');
     this.registerEvent('mouseover', 'DOMEvent', 'event', 'eventView');
     this.registerEvent('mouseout', 'DOMEvent', 'event', 'eventView');
 
     this.microViz = this;
+    this.enableMicroViz = enableMicroViz;
 
     this.container = container;
     this.editor = CodeMirror(container);
@@ -32,6 +33,10 @@ class MicroViz extends CheckedEmitter {
   get currentPath() { return this.paths[this.currentPathIdx]; }
 
   setPaths(paths) {
+    if (!this.enableMicroViz) {
+      return;
+    }
+
     this.eventViews = new Map();
     this.implementations = new Map();
 
@@ -59,6 +64,10 @@ class MicroViz extends CheckedEmitter {
   }
 
   addImplementation(microVizEvents) {
+    if (!this.enableMicroViz) {
+      return;
+    }
+    
     const implMicroVizEvents = microVizEvents;
 
     const parentPath = this.paths[this.currentPathIdx - 1];

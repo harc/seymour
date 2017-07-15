@@ -6,8 +6,9 @@ const COLOR_LETTERS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 // these are rows in the act-on/acted-on matrix
 
 class Highlighting {
-  constructor(globalState) {
+  constructor(globalState, enableHighlighting) {
     this.globalState = globalState;
+    this.enableHighlighting = enableHighlighting;
 
     this.registerListenersMacroViz();
     this.registerListenersMicroViz();
@@ -38,20 +39,26 @@ class Highlighting {
   // ============
 
   registerListenersMacroViz() {
+    if (!this.macroViz) {
+      return;
+    }
+    
     this.macroViz.addListener('click', (__, event, _) => {
         this.focusLexicalStack(event)
     });
 
-    this.macroViz.addListener('mouseover', (__, event, _) => {
-      this.macroVizClearAllHover();
-      this.macroVizHighlightHover(event);
+    if (this.enableHighlighting) {
+      this.macroViz.addListener('mouseover', (__, event, _) => {
+        this.macroVizClearAllHover();
+        this.macroVizHighlightHover(event);
 
-      this.codeClearDef();
-      this.codeHighlightDef(event.activationEnv.sourceLoc);
+        this.codeClearDef();
+        this.codeHighlightDef(event.activationEnv.sourceLoc);
 
-      this.codeClearRef();
-      this.codeHighlightRef(event.sourceLoc);
-    });
+        this.codeClearRef();
+        this.codeHighlightRef(event.sourceLoc);
+      });
+    }
 
     this.macroViz.addListener('mouseout', (__, event, _) => {
       this.macroVizClearAllHover();
@@ -69,22 +76,24 @@ class Highlighting {
       }
     });
 
-    this.microViz.addListener('mouseover', (_, event, view) => {
-      if (event instanceof SendEvent && !view.isImplementation) {
+    if (this.enableHighlighting) {
+      this.microViz.addListener('mouseover', (_, event, view) => {
+        if (event instanceof SendEvent && !view.isImplementation) {
 
-        this.codeClearDef();
-        this.codeHighlightDef(event.activationEnv.sourceLoc);
+          this.codeClearDef();
+          this.codeHighlightDef(event.activationEnv.sourceLoc);
 
-        this.codeClearRef();
-        this.codeHighlightRef(event.sourceLoc);
-        this.codeClearResultWidget();
-        this.codeAddResultWidget(event);
-        this.macroVizClearAllRef();
-        this.macroVizHighlightRef(event);
+          this.codeClearRef();
+          this.codeHighlightRef(event.sourceLoc);
+          this.codeClearResultWidget();
+          this.codeAddResultWidget(event);
+          this.macroVizClearAllRef();
+          this.macroVizHighlightRef(event);
 
-        // TODO: may want to highlight more things, but this is enough for now
-      }
-    });
+          // TODO: may want to highlight more things, but this is enough for now
+        }
+      });
+    }
 
     this.microViz.addListener('mouseout', (_, event, view) => {
       this.codeClearDef();
@@ -96,6 +105,9 @@ class Highlighting {
   }
 
   registerListenersCode() {
+    if (!this.enableHighlighting) {
+      return;
+    }
     // TODO: this is gonna need some serious color work to be sensible
     this.editor.getWrapperElement().onmousemove = e => {
       const highlightCode = e.getModifierState('Meta');
