@@ -231,6 +231,9 @@ class Highlighting {
   mostSpecificEventContaining(pos) {
     const idx = this.editor.doc.indexFromPos(pos);
     let theEvent = null;
+    if (!this.macroViz) {
+      return null;
+    }
     this.macroViz.events.forEach(event => {
       if (!(event instanceof SendEvent)) return;
 
