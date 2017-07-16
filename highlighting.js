@@ -157,15 +157,19 @@ class Highlighting {
       const defSourceLoc = event && event.activationEnv && event.activationEnv.sourceLoc;
 
       this.macroVizClearAllDef();
-      this.macroVizHighlightDefsAt(pos);
+      if (this.macroViz) {
+        this.macroVizHighlightDefsAt(pos);
+      }
       this.codeClearDef();
       if (highlightCode && defSourceLoc) {
         this.codeHighlightDef(defSourceLoc);
       }
       
       this.macroVizClearAllRefColors();
-      let selectableCalls = this.macroVizHighlightRefsAt(
-            pos, event, highlightCode && defSourceLoc);
+      if (this.macroViz) {
+        let selectableCalls = this.macroVizHighlightRefsAt(
+              pos, event, highlightCode && defSourceLoc);
+      }
       this.codeClearRef();
       if (highlightCode && event) {
         this.codeHighlightRef(event.sourceLoc);
@@ -183,10 +187,14 @@ class Highlighting {
       const pos = this.editor.doc.getCursor('head');
 
       this.macroVizClearAllDef();
-      this.macroVizHighlightDefsAt(pos);
+      if (this.macroViz) {
+        this.macroVizHighlightDefsAt(pos);
+      }
 
       this.macroVizClearAllRefColors();
-      this.macroVizHighlightRefsAt(pos);
+      if (this.macroViz) {
+        this.macroVizHighlightRefsAt(pos);
+      }
     });
 
     this.editor.getWrapperElement().onmouseout = _ => {
