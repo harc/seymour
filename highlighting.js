@@ -29,6 +29,44 @@ class Highlighting {
 
     // code
     this.markers = {};
+
+    this.partials();
+  }
+
+  partials() {
+    this.macroVizHighlightHover = 
+        _.partial(Highlighting.prototype.macroVizHighlight, _, 'hover', '');
+    this.macroVizHighlightFocus = 
+        _.partial(Highlighting.prototype.macroVizHighlight, _, 'focus', '');
+    this.macroVizHighlightDef = 
+        _.partial(Highlighting.prototype.macroVizHighlight, _, 'def', '');
+    this.macroVizHighlightRef = 
+        _.partial(Highlighting.prototype.macroVizHighlight, _, 'ref', _);
+    this.macroVizHighlightRefSpecific = 
+        _.partial(Highlighting.prototype.macroVizHighlight, _, 'ref-specific');
+
+    this.macroVizClearAllFocus = 
+        _.partial(Highlighting.prototype.macroVizClearAll, 'focus', false);
+    this.macroVizClearAllHover = 
+        _.partial(Highlighting.prototype.macroVizClearAll, 'hover', false);
+    this.macroVizClearAllDef = 
+        _.partial(Highlighting.prototype.macroVizClearAll, 'def', false);
+    this.macroVizClearAllRef = 
+        _.partial(Highlighting.prototype.macroVizClearAll, 'ref', false);
+    this.macroVizClearAllRefColors = 
+        _.partial(Highlighting.prototype.macroVizClearAll, 'ref', true);
+
+    // code partials
+
+    this.codeHighlightDef = 
+        _.partial(Highlighting.prototype.codeHighlight, _, 'def');
+    this.codeHighlightRef = 
+        _.partial(Highlighting.prototype.codeHighlight, _, 'ref');
+
+    this.codeClearDef = 
+        _.partial(Highlighting.prototype.codeClear, 'def');
+    this.codeClearRef = 
+        _.partial(Highlighting.prototype.codeClear, 'ref');
   }
 
   get macroViz() { return this.globalState.macroViz; }
@@ -42,7 +80,7 @@ class Highlighting {
     if (!this.macroViz) {
       return;
     }
-    
+
     this.macroViz.addListener('click', (__, event, _) => {
         this.focusLexicalStack(event)
     });
@@ -174,7 +212,9 @@ class Highlighting {
   }
 
   focusPath(path) {
-    this.macroVizHighlightFocus(path.env.programOrSendEvent);
+    if (this.macroViz) {
+      this.macroVizHighlightFocus(path.env.programOrSendEvent);
+    }
     this.microVizFocus(path);
   }
 
@@ -407,39 +447,3 @@ class Highlighting {
 
   // TODO: partials
 }
-
-// macro viz partials
-
-Highlighting.prototype.macroVizHighlightHover = 
-    _.partial(Highlighting.prototype.macroVizHighlight, _, 'hover', '');
-Highlighting.prototype.macroVizHighlightFocus = 
-    _.partial(Highlighting.prototype.macroVizHighlight, _, 'focus', '');
-Highlighting.prototype.macroVizHighlightDef = 
-    _.partial(Highlighting.prototype.macroVizHighlight, _, 'def', '');
-Highlighting.prototype.macroVizHighlightRef = 
-    _.partial(Highlighting.prototype.macroVizHighlight, _, 'ref', _);
-Highlighting.prototype.macroVizHighlightRefSpecific = 
-    _.partial(Highlighting.prototype.macroVizHighlight, _, 'ref-specific');
-
-Highlighting.prototype.macroVizClearAllFocus = 
-    _.partial(Highlighting.prototype.macroVizClearAll, 'focus', false);
-Highlighting.prototype.macroVizClearAllHover = 
-    _.partial(Highlighting.prototype.macroVizClearAll, 'hover', false);
-Highlighting.prototype.macroVizClearAllDef = 
-    _.partial(Highlighting.prototype.macroVizClearAll, 'def', false);
-Highlighting.prototype.macroVizClearAllRef = 
-    _.partial(Highlighting.prototype.macroVizClearAll, 'ref', false);
-Highlighting.prototype.macroVizClearAllRefColors = 
-    _.partial(Highlighting.prototype.macroVizClearAll, 'ref', true);
-
-// code partials
-
-Highlighting.prototype.codeHighlightDef = 
-    _.partial(Highlighting.prototype.codeHighlight, _, 'def');
-Highlighting.prototype.codeHighlightRef = 
-    _.partial(Highlighting.prototype.codeHighlight, _, 'ref');
-
-Highlighting.prototype.codeClearDef = 
-    _.partial(Highlighting.prototype.codeClear, 'def');
-Highlighting.prototype.codeClearRef = 
-    _.partial(Highlighting.prototype.codeClear, 'ref');

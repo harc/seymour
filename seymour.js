@@ -1,6 +1,4 @@
 class Seymour extends CheckedEmitter {
-  // TODO: allow passing in either micro or macro as null
-  // TODO: flag for highlighting
   constructor(microVizContainer, macroVizContainer = null, 
         enableMicroViz = true, enableHighlighting = true) {
     super(); 
@@ -47,6 +45,8 @@ class Seymour extends CheckedEmitter {
     this.editor.on('changes', (cmInstance, changes) => {
       this.handleChangesDebounced(cmInstance, changes);
     });
+
+    this.handleChangesDebounced = _.debounce(Seymour.prototype.handleChanges, 500);
   }
 
   run(ast, code = null) {
@@ -137,4 +137,4 @@ class Seymour extends CheckedEmitter {
   }
 }
 
-Seymour.prototype.handleChangesDebounced = _.debounce(Seymour.prototype.handleChanges, 500);
+// Seymour.prototype.handleChangesDebounced = _.debounce(Seymour.prototype.handleChanges, 500);
