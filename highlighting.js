@@ -126,7 +126,9 @@ class Highlighting {
           this.codeClearResultWidget();
           this.codeAddResultWidget(event);
           this.macroVizClearAllRef();
-          this.macroVizHighlightRef(event);
+          if (this.macroViz) {
+            this.macroVizHighlightRef(event);
+          }
 
           // TODO: may want to highlight more things, but this is enough for now
         }
