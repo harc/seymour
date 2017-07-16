@@ -67,7 +67,7 @@ class MicroViz extends CheckedEmitter {
     if (!this.enableMicroViz) {
       return;
     }
-    
+
     const implMicroVizEvents = microVizEvents;
 
     const parentPath = this.paths[this.currentPathIdx - 1];
@@ -166,7 +166,7 @@ class MicroViz extends CheckedEmitter {
     const newPaddingBottom = bottomY - elementBottom;
     if (newPaddingBottom - currentPaddingBottom > 1 ||
         newPaddingBottom - currentPaddingBottom < -1) {
-      element.style.paddingBottom = newPaddingBottom;
+      element.style.paddingBottom = newPaddingBottom + 'px';
     }
   }
 
