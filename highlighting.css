@@ -31,55 +31,55 @@ temp {
 
 /* TODO: consider keeping cursorOnDecl, cursorOnSend */
 
-#macroVizContainer macroVizNode[isFocusable="true"] > label:hover {
+macroVizNode[isFocusable="true"] > label:hover {
   background: var(--hover-color);
 }
 
-#macroVizContainer macroVizNode.highlight-focus > label {
+macroVizNode.highlight-focus > label {
   background-color: var(--focus-color) !important;
 }
 
-#macroVizContainer macroVizNode.highlight-def > label {
+macroVizNode.highlight-def > label {
   background-color: var(--def-color) !important;
 }
 
-#macroVizContainer macroVizNode.highlight-ref > label {
+macroVizNode.highlight-ref > label {
   background-color: var(--ref-color) !important;
 }
 
-#macroVizContainer macroVizNode.highlight-ref-specific > label {
+macroVizNode.highlight-ref-specific > label {
   background-color: var(--ref-specific-color) !important;
 }
 
-#macroVizContainer macroVizNode.highlight-ref-1 > label {
+macroVizNode.highlight-ref-1 > label {
   background-color: var(--color-a) !important;
 }
 
-#macroVizContainer macroVizNode.highlight-ref-2 > label {
+macroVizNode.highlight-ref-2 > label {
   background-color: var(--color-b) !important;
 }
 
-#macroVizContainer macroVizNode.highlight-ref-3 > label {
+macroVizNode.highlight-ref-3 > label {
   background-color: var(--color-c) !important;
 }
 
-#macroVizContainer macroVizNode.highlight-ref-4 > label {
+macroVizNode.highlight-ref-4 > label {
   background-color: var(--color-d) !important;
 }
 
-#macroVizContainer macroVizNode.highlight-ref-5 > label {
+macroVizNode.highlight-ref-5 > label {
   background-color: var(--color-e) !important;
 }
 
-#macroVizContainer macroVizNode.highlight-ref-6 > label {
+macroVizNode.highlight-ref-6 > label {
   background-color: var(--color-f) !important;
 }
 
-#macroVizContainer macroVizNode.highlight-ref-7 > label {
+macroVizNode.highlight-ref-7 > label {
   background-color: var(--color-g) !important;
 }
 
-#macroVizContainer macroVizNode.highlight-ref-8 > label {
+macroVizNode.highlight-ref-8 > label {
   background-color: var(--color-h) !important;
 }
 
