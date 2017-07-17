@@ -90,8 +90,8 @@ class Seymour extends CheckedEmitter {
     } catch (e) {
       const activationEnv = this.R.currentProgramOrSendEvent.activationEnv;
       this.R.error(
-        activationEnv ? null : R.currentProgramOrSendEvent.sourceLoc, 
-        activationEnv || R.currentProgramOrSendEvent.env, e.toString());
+        activationEnv ? null : this.R.currentProgramOrSendEvent.sourceLoc, 
+        activationEnv || this.R.currentProgramOrSendEvent.env, e.toString());
       this.emit('error', e);
       done = true;
     }
