@@ -43,10 +43,8 @@ class Seymour extends CheckedEmitter {
     });
 
     this.editor.on('changes', (cmInstance, changes) => {
-      this.handleChangesDebounced(cmInstance, changes);
+      this.handleChanges(cmInstance, changes);
     });
-
-    this.handleChangesDebounced = _.debounce(Seymour.prototype.handleChanges, 500);
   }
 
   run(ast, code = null) {
@@ -112,6 +110,9 @@ class Seymour extends CheckedEmitter {
     }
 
     syntaxHighlight(this.editor, this.m);
+    if (this.changesTimeout) {
+      clearTimeout(this.changesTimeout);
+    }
 
     const r = this.m.match();
     if (r.succeeded()) {
@@ -120,21 +121,26 @@ class Seymour extends CheckedEmitter {
       console.debug('ast', ast);
       const code = preludeAST.toInstruction(ast.toInstruction(new IDone()));
       console.debug('code', code);
-      this.run(ast, code);
+      this.changesTimeout = setTimeout(() => {
+        this.run(ast, code);
+        this.changesTimeout = null;
+      }, 500);
     } else {
       const expected = r.getExpectedText();
       const pos = this.editor.doc.posFromIndex(r.getRightmostFailurePosition());
       const error = document.createElement('parseError');
       error.innerText = spaces(pos.ch) + '^\nExpected: ' + expected;
       this.parseErrorWidget = this.editor.addLineWidget(pos.line, error);
-      $(error).hide().delay(2000).slideDown().queue(() => {
-        if (this.parseErrorWidget) {
-          this.parseErrorWidget.changed();
-        }
-      });
+      this.changesTimeout = setTimeout(() => {
+        $(error).slideDown().queue(() => {
+          if (this.parseErrorWidget) {
+            this.parseErrorWidget.changed();
+          }
+        });
+        this.changesTimeout = null;
+      }, 2000);
+      $(error).hide();
       this.parseErrorWidget.changed();
     }
   }
 }
-
-// Seymour.prototype.handleChangesDebounced = _.debounce(Seymour.prototype.handleChanges, 500);
