@@ -166,8 +166,9 @@ class Highlighting {
       }
       
       this.macroVizClearAllRefColors();
+      let selectableCalls = null;
       if (this.macroViz) {
-        let selectableCalls = this.macroVizHighlightRefsAt(
+        selectableCalls = this.macroVizHighlightRefsAt(
               pos, event, highlightCode && defSourceLoc);
       }
       this.codeClearRef();
