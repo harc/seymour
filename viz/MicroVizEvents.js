@@ -9,6 +9,16 @@ class MicroVizEvents extends CheckedEmitter {
     this.isImplementation = isImplementation;
     this.sourceLoc = sourceLoc;
     this.eventGroups = [];
+
+    if (this.isImplementation) {
+      const eventGroup = new LocalEventGroup();
+      this.eventGroups.push(eventGroup);
+      this.emit('addEventGroup', eventGroup);
+    }
+  }
+
+  get orderNum() {
+    return this.programOrSendEvent.orderNum;
   }
 
   get lastEventGroup() {
@@ -26,11 +36,14 @@ class MicroVizEvents extends CheckedEmitter {
     const eventIsLocal = event.sourceLoc && this.sourceLoc.contains(event.sourceLoc);
     if (eventIsLocal && this.lastEventGroup instanceof LocalEventGroup) {
       const lastEvent = this.lastEventGroup.lastEvent;
-      if (event.sourceLoc.startPos >= lastEvent.sourceLoc.endPos ||  // Toby's rule
-          event.sourceLoc.strictlyContains(lastEvent.sourceLoc) ||  // Inside-out rule
-          event.sourceLoc.equals(lastEvent.sourceLoc) &&
-              event.constructor !== lastEvent.constructor &&
-              (event instanceof ReturnEvent || event instanceof ShowEvent)) {
+      if (!lastEvent ||
+          event.orderNum > lastEvent.orderNum ||
+          event.orderNum === lastEvent.orderNum && lastEvent.constructor.name !== event.constructor.name) {//} ||
+        // event.sourceLoc.startPos >= lastEvent.sourceLoc.endPos ||  // Toby's rule
+        //   event.sourceLoc.strictlyContains(lastEvent.sourceLoc) ||  // Inside-out rule
+          // event.sourceLoc.equals(lastEvent.sourceLoc) &&
+          //     event.constructor !== lastEvent.constructor &&
+          //     (event instanceof ReturnEvent || event instanceof ShowEvent)) {
         // no-op
       } else {
         const eventGroup = new LocalEventGroup();

@@ -26,6 +26,8 @@ class MacroViz extends CheckedEmitter {
         this.addChild(child, parent));
     this.eventRecorder.addListener('addRoot', (root) =>
         this.addRoot(root));
+    this.eventRecorder.addListener('activateSend', (send) =>
+        this.activateSend(send))
   }
 
   get events() {
@@ -55,6 +57,10 @@ class MacroViz extends CheckedEmitter {
     }
   }
 
+  activateSend(send) {
+    this.nodeViews.get(send).activate();
+  }
+
   setView(child, childView) {
     this.nodeViews.set(child, childView);
   }
@@ -77,21 +83,28 @@ class NodeView {
   render() {
     this.children = d('children', {});
     this.label = d('label', {});
-    this.DOM = d('macroVizNode', {isFocusable: !!this.event.activationEnv.sourceLoc},
-        this.label, this.children);
+    this.DOM = d('macroVizNode', {
+        isFocusable: !!(this.event.activationEnv && this.event.activationEnv.sourceLoc)
+      },
+      this.label, this.children);
 
     this.label._event = this.event;
     this.label.onclick = (event) => this.macroViz.onClick(event, this.event);
     this.label.onmouseover = (event) => this.macroViz.onMouseover(event, this.event);
     this.label.onmouseout = (event) => this.macroViz.onMouseout(event, this.event);
 
-    if (!this.event.activationEnv.sourceLoc) {
+    if (!(this.event.activationEnv && this.event.activationEnv.sourceLoc)) {
       this.collapse();
     }
 
     this.event.children.forEach(child => {
       this.addChild(child);
     });
+  }
+
+  activate() {
+    this.DOM.setAttribute('isFocusable', true)
+    this.collapse(false)
   }
 
   addChild(child) {

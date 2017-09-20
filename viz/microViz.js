@@ -196,7 +196,6 @@ class MicroViz extends CheckedEmitter {
 
 }
 
-
 class AbstractView {
   constructor(parent, sourceLoc, classes) {
     this.parent = parent;
@@ -390,6 +389,8 @@ class LocalEventGroupView extends AbstractView {
     if (this.lastEventNode !== null) {
       this.lastEventNode.classList.remove('lastInLine');
     }
+    // const referenceDOM = this.lastEventNode.DOM.nextSibling;
+    const previousNode = this.lastEventNode;
     // TODO: factor out creation
     this.lastEventNode = this.mkEventView(event, event.sourceLoc, 'pushDown');
     this.lastPopulatedLineNumber =
@@ -403,7 +404,7 @@ class LocalEventGroupView extends AbstractView {
     const spacers =
         range(this.lastChild.startLine, event.sourceLoc.startLineNumber - 1).
         map(lineNumber => new Spacer(this, lineNumber));
-    if (spacers.length > 0) { this.lastEventNode.classList.add('firstInLine'); }
+    // if (spacers.length > 0) { this.lastEventNode.classList.add('firstInLine'); }
     this.addChild(new Wrapper(this, ...spacers, this.lastEventNode), referenceDOM);
   }
 
@@ -424,12 +425,12 @@ class LocalEventGroupView extends AbstractView {
 
   addImplementation(implView) {
     // pick out nodes on implview's extent
-    const nodesToWrap = flatten(this.extent
+    const nodesToWrap = unique(flatten(this.extent
         .map(line => this.children[line].concat(this.spacers[line])))
       .filter(node => node !== null)
       .filter(child => 
         !(child.startLine < implView.startLine  && child.endLine < implView.startLine) &&
-        !(child.startLine > implView.endLine  && child.endLine > implView.endLine));
+        !(child.startLine > implView.endLine  && child.endLine > implView.endLine)));
     const referenceDOM = nodesToWrap[nodesToWrap.length-1].DOM.nextSibling || null;
     
     // remove those nodes
@@ -477,7 +478,10 @@ class LocalEventGroupView extends AbstractView {
         .forEach(line => this.microViz.fixHeight(line));
     }
 
-    this.children[view.startLine].push(view);
+    // this.children[view.startLine].push(view);
+    view.extent.forEach(line => {
+      this.children[line].push(view);
+    })
     this.lastChild = view;
     this.DOM.insertBefore(view.DOM, referenceDOM);
     this.microViz.fixHeightsFor(view);
@@ -617,6 +621,14 @@ class Wrapper extends AbstractView {
 
     if (firstInLine) {
       classes.push('firstInLine');
+    } else {
+      for (let view of views) {
+        if (view instanceof Spacer) { continue; }
+        else {
+          view.classList.add('firstInLine');
+          break;
+        }
+      }
     }
     // if (views[views.length - 1].classList.contains('lastInLine')) {
     //   classes.push('lastInLine');

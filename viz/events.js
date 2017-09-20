@@ -1,7 +1,8 @@
 "use strict";
 
 class Event {
-  constructor(sourceLoc, env) {
+  constructor(orderNum, sourceLoc, env) {
+    this.orderNum = orderNum;
     this.id = Event.nextEventId++;
     this.sourceLoc = sourceLoc;
     this.env = env;
@@ -21,7 +22,7 @@ class Event {
       return '∞';
     } else if (v === -Infinity) {
       return '-∞';
-    } else if (v instanceof Obj) {
+    } else if (v !== null && v.hasOwnProperty('id')) {
       return v.id < Event.objectIdEmojis.length ? Event.objectIdEmojis[v.id] : '#' + v.id;
     } else {
       return JSON.stringify(v);
@@ -48,15 +49,15 @@ Event.objectIdEmojis = [
   '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🏒', '⛸', '🏄', '🎸', '🎷', '🏠', '🏰', '😀', '😱', '👦🏻', '👨🏾'];
 
 class ProgramEvent extends Event {
-  constructor(sourceLoc) {
-    super(sourceLoc, null);
+  constructor(orderNum, sourceLoc) {
+    super(orderNum, sourceLoc, null);
     // also: activationEnv
   }
 }
 
 class SendEvent extends Event {
-  constructor(sourceLoc, env, recv, selector, args, activationPathToken) {
-    super(sourceLoc, env);
+  constructor(orderNum, sourceLoc, env, recv, selector, args, activationPathToken) {
+    super(orderNum, sourceLoc, env);
     this.recv = recv;
     this.selector = selector;
     this.args = args;
@@ -77,8 +78,8 @@ class SendEvent extends Event {
 }
 
 class VarDeclEvent extends Event {
-  constructor(sourceLoc, env, name, value) {
-    super(sourceLoc, env);
+  constructor(orderNum, sourceLoc, env, name, value) {
+    super(orderNum, sourceLoc, env);
     this.name = name;
     this.value = value;
   }
@@ -89,8 +90,8 @@ class VarDeclEvent extends Event {
 }
 
 class VarAssignmentEvent extends Event {
-  constructor(sourceLoc, env, declEnv, name, value) {
-    super(sourceLoc, env);
+  constructor(orderNum, sourceLoc, env, declEnv, name, value) {
+    super(orderNum, sourceLoc, env);
     this.declEnv = declEnv;
     this.name = name;
     this.value = value;
@@ -107,8 +108,8 @@ class VarAssignmentEvent extends Event {
 }
 
 class InstVarAssignmentEvent extends Event {
-  constructor(sourceLoc, env, obj, name, value) {
-    super(sourceLoc, env);
+  constructor(orderNum, sourceLoc, env, obj, name, value) {
+    super(orderNum, sourceLoc, env);
     this.obj = obj;
     this.name = name;
     this.value = value;
@@ -126,21 +127,21 @@ class InstVarAssignmentEvent extends Event {
 
 class InstantiationEvent extends Event {
   // TODO: how should we handle the call to init?
-  constructor(sourceLoc, env, _class, args, newInstance) {
-    super(sourceLoc, env);
+  constructor(orderNum, sourceLoc, env, _class, args, newInstance) {
+    super(orderNum, sourceLoc, env);
     this.class = _class;
     this.args = args;
     this.newInstance = newInstance;
   }
 
   toMicroVizString() {
-    return 'new ' + this._valueString(this.class) + ' -> ' + this._valueString(this.newInstance);
+    return 'new ' + this._valueString(this.class) + ' → ' + this._valueString(this.newInstance);
   }
 }
 
 class ReturnEvent extends Event {
-  constructor(sourceLoc, env, value) {
-    super(sourceLoc, env);
+  constructor(orderNum, sourceLoc, env, value) {
+    super(orderNum, sourceLoc, env);
     this.value = value;
   }
 
@@ -162,8 +163,8 @@ class NonLocalReturnEvent extends ReturnEvent {
 }
 
 class ShowEvent extends Event {
-  constructor(sourceLoc, env, string) {
-    super(sourceLoc, env);
+  constructor(orderNum, sourceLoc, env, string) {
+    super(orderNum, sourceLoc, env);
     this.string = string;
   }
 
@@ -172,7 +173,7 @@ class ShowEvent extends Event {
 
 class ErrorEvent extends Event {
   constructor(sourceLoc, env, errorString) {
-    super(sourceLoc, env);
+    super(-1, sourceLoc, env);
     this.errorString = errorString;
   }
 
