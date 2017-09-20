@@ -124,7 +124,7 @@ class Seymour extends CheckedEmitter {
       this.changesTimeout = setTimeout(() => {
         this.run(ast, code);
         this.changesTimeout = null;
-      }, 500);
+      }, 200);
     } else {
       const expected = r.getExpectedText();
       const pos = this.editor.doc.posFromIndex(r.getRightmostFailurePosition());

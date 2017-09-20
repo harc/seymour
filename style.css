@@ -75,3 +75,13 @@ parseError {
 /*#errorDiv:empty {
   padding: 0px !important;
 }*/
+
+/** DEMO CHANGES **/
+
+#legend {
+  display: none;
+}
+
+.macroViz macroVizNode.collapsed > label {
+    display: none;
+}

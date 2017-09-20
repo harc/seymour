@@ -25,6 +25,8 @@
   padding: 4px;
   background: hsl(0, 0%, 90%);
   margin: 0;
+  margin-left: 1px;
+  margin-right: 1px;
 }
 
 .macroViz macroVizNode.error > label {

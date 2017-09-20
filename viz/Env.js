@@ -80,3 +80,9 @@ class Env {
 }
 
 Env.nextEnvId = 0;
+
+class Scope extends Env {
+  constructor(sourceLoc, parentEnv, callerEnv, programOrSendEvent) {
+    super(sourceLoc, parentEnv, callerEnv, programOrSendEvent);
+  }
+}

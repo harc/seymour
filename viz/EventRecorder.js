@@ -47,7 +47,7 @@ class EventRecorder extends CheckedEmitter {
     return returnValue;
   }
 
-/*
+
   enterScope(sourceLoc, env) {
     this.send(sourceLoc, env, null, 'enterNewScope', []);
     return this.mkEnv(sourceLoc);
@@ -56,7 +56,7 @@ class EventRecorder extends CheckedEmitter {
   leaveScope(env) {
     this.receive(env, null);
   }
-*/
+
 
   _emit(event) {
     this.currentProgramOrSendEvent.children.push(event);
