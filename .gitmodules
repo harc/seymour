@@ -1,0 +1,3 @@
+[submodule "python-in-ohm"]
+	path = python-in-ohm
+	url = git@github.com:sakekasi/python-in-ohm.git

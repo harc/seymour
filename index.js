@@ -11,7 +11,9 @@ console.debug = function(...args) {
 
 // -----
 
-const S = new Seymour(microVizContainer, macroVizContainer);
+// const S = new Seymour(microVizContainer, macroVizContainer);
+
+const S = new Python(microVizContainer, macroVizContainer);
 
 S.addListener('codeChanged', code => {
   clearError();
