@@ -38,7 +38,9 @@ class MicroVizEvents extends CheckedEmitter {
       const lastEvent = this.lastEventGroup.lastEvent;
       if (!lastEvent ||
           event.orderNum > lastEvent.orderNum ||
-          event.orderNum === lastEvent.orderNum && lastEvent.constructor.name !== event.constructor.name) {//} ||
+          event.orderNum === lastEvent.orderNum && 
+          (!(lastEvent instanceof VarDeclEvent && event instanceof VarAssignmentEvent) &&
+          lastEvent.constructor.name !== event.constructor.name)) {
         // event.sourceLoc.startPos >= lastEvent.sourceLoc.endPos ||  // Toby's rule
         //   event.sourceLoc.strictlyContains(lastEvent.sourceLoc) ||  // Inside-out rule
           // event.sourceLoc.equals(lastEvent.sourceLoc) &&

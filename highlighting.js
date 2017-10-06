@@ -124,7 +124,9 @@ class Highlighting {
           this.codeClearRef();
           this.codeHighlightRef(event.sourceLoc);
           this.codeClearResultWidget();
-          this.codeAddResultWidget(event);
+          if (event.selector !== 'enterNewScope') {
+            this.codeAddResultWidget(event);
+          }
           this.macroVizClearAllRef();
           if (this.macroViz) {
             this.macroVizHighlightRef(event);
