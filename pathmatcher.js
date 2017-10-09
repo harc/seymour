@@ -16,7 +16,8 @@ class PathMatcher {
 
   processEvent(child, parent) {
     console.assert(this.idx < this.path.length);
-    if (this.envAtIdx === parent.activationEnv &&
+    if (parent && parent.activationEnv &&
+        this.envAtIdx === parent.activationEnv &&
         child.activationPathToken === this.path[this.idx]) {
       this.idx++;
       this.envAtIdx = child.activationEnv;

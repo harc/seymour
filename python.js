@@ -42,6 +42,12 @@ class Python extends CheckedEmitter {
     this.microViz = new MicroViz(this.microVizContainer, enableMicroViz);
     this.editor = this.microViz.editor;
     this.editor.setOption('lineNumbers', true);
+    this.editor.setOption("extraKeys", {
+      Tab: function(cm) {
+        var spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
+        cm.replaceSelection(spaces);
+      }
+    });
 
     if (this.macroVizContainer) {
       this.macroViz = new MacroViz(this.macroVizContainer);
@@ -93,18 +99,23 @@ class Python extends CheckedEmitter {
     }
 
     console.log('pathmatchers', this.pathMatchers);
-    this.R.addListener('addChild', (child, parent) => {
-      this.pathMatchers.forEach(pathMatcher => {
-        if (pathMatcher.env) {
-          // nothing to do
-          return;
-        }
-        pathMatcher.processEvent(child, parent);
-        if (pathMatcher.env) {
-          this.highlighting.focusPath(pathMatcher);
-        }
-      });
-
+    this.R.addListener('activateSend', (child) => {
+      const parent = child.env ? child.env.programOrSendEvent : null;
+      if (this.pathMatchers) {
+        this.pathMatchers.forEach(pathMatcher => {
+          if (pathMatcher.env) {
+            // nothing to do
+            return;
+          }
+          pathMatcher.processEvent(child, parent);
+          if (pathMatcher.env) {
+            this.highlighting.focusPath(pathMatcher);
+          }
+        });
+      }
+    });
+    
+    this.R.addListener('addChild', (child, _) => {
       if (child instanceof ErrorEvent) {
         this.emit('error', child.errorString);
       }
@@ -238,6 +249,7 @@ class Python extends CheckedEmitter {
       this.globalEnv = env;
       env.programOrSendEvent.activationEnv = env;
     }
+    console.log(env);
     return env;
   }
 
