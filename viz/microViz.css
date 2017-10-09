@@ -165,6 +165,7 @@
 
 .microViz microVizDiv event.remote {
   opacity: 0.5;
+  pointer-events: none;
 }
 
 .microViz microVizDiv event.remote::before {
