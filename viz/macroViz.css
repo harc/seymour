@@ -34,6 +34,7 @@
 }
 
 .macroViz macroVizNode[isFocusable="false"] > label {
+  display: none;
   background: hsl(0, 0%, 97%);
 }
 

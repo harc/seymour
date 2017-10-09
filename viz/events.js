@@ -74,6 +74,21 @@ class SendEvent extends Event {
     }
     return s;
   }
+
+  isInlineBlockCall() {
+    const isBlockCall = this.recv instanceof BlockClosure && this.selector === 'call';
+    if (!isBlockCall) return false;
+
+    let someParentContains = false;
+    let env = this.env;
+    while (env) {
+      const send = env.programOrSendEvent;
+      someParentContains = someParentContains || 
+        (send.sourceLoc && send.sourceLoc.contains(this.activationEnv.sourceLoc));
+      env = env.callerEnv;
+    }
+    return isBlockCall && someParentContains;
+  }
 }
 
 class VarDeclEvent extends Event {
