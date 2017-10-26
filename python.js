@@ -81,6 +81,7 @@ class Python extends CheckedEmitter {
     this.socket.addEventListener('message', (message) => this.onMessage(message));
     // TODO: guarantee run happens after socket is opened
     this.socket.addEventListener('open', () => this.onOpen());
+    this.socket.addEventListener('close', (event) => console.log('CLOSED', event));
 
     this.envs = {};
     this.events = {};
