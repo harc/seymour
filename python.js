@@ -25,6 +25,9 @@ const typeToClass = {
   Scope
 }
 
+const MESSAGES_PER_PERIOD = 10;
+const SECONDS_PER_PERIOD = 0.1;
+
 class Python extends CheckedEmitter {
   constructor(microVizContainer, macroVizContainer = null, enableMicroViz = true, 
     enableHighlighting = true) {
@@ -77,7 +80,7 @@ class Python extends CheckedEmitter {
     
     this.instrumenter = new IncrementalInstrumenter();
 
-    this.socket = new WebSocket('ws://localhost:8000');
+    this.socket = new WebSocket('ws://localhost:8004');
     this.socket.addEventListener('message', (message) => this.onMessage(message));
     // TODO: guarantee run happens after socket is opened
     this.socket.addEventListener('open', () => this.onOpen());
@@ -85,6 +88,8 @@ class Python extends CheckedEmitter {
 
     this.envs = {};
     this.events = {};
+    this.messageQueue = [];
+    this.eventProcessingTimeout = null;
   }
 
   run(originalCode, instrumentedCode) {
@@ -125,6 +130,11 @@ class Python extends CheckedEmitter {
     // if (!this.opened) { debugger; }
     this.envs = {};
     this.events = {};
+    this.messageQueue = [];
+    if (this.eventProcessingTimeout !== null) {
+      clearTimeout(this.eventProcessingTimeout);
+    }
+    this.eventProcessingTimeout = setTimeout(()=>this.processSomeMessages(), 1000*SECONDS_PER_PERIOD);
     this.socket.send(JSON.stringify({ type: 'kill' }))
     this.socket.send(JSON.stringify({
       type: 'run',
@@ -213,26 +223,37 @@ class Python extends CheckedEmitter {
 
   onMessage(event) {
     const data = JSON.parse(event.data); 
-    switch(data.type) {
-      case 'Env':
-      case 'Scope':
-        this.envs[data.id] = this.fixupEnv(data);
-        this.R._registerSend(this.envs[data.id])
-        if (this.envs[data.id].callerEnv == null) { // global env
-          if (this.pathMatchers === null) {
-            this.pathMatchers = getPathMatchers(this.envs[data.id]);
-          }
-          this.pathMatchers.forEach(pathMatcher => pathMatcher.reset(this.envs[data.id]));
+    this.messageQueue.push(data);
+  }
 
-          this.highlighting.clearFocus();
-          this.highlighting.focusPath(this.pathMatchers[0]);
-        }
-        break;
-      case 'done':
-        break;
-      default:
-        this.fixupEvent(data)
+  processSomeMessages() {
+    let messagesToProcess = MESSAGES_PER_PERIOD;
+    while (this.messageQueue.length > 0 && messagesToProcess > 0) {
+      const data = this.messageQueue.shift();
+      switch(data.type) {
+        case 'Env':
+        case 'Scope':
+          this.envs[data.id] = this.fixupEnv(data);
+          this.R._registerSend(this.envs[data.id])
+          if (this.envs[data.id].callerEnv == null) { // global env
+            if (this.pathMatchers === null) {
+              this.pathMatchers = getPathMatchers(this.envs[data.id]);
+            }
+            this.pathMatchers.forEach(pathMatcher => pathMatcher.reset(this.envs[data.id]));
+  
+            this.highlighting.clearFocus();
+            this.highlighting.focusPath(this.pathMatchers[0]);
+          }
+          break;
+        case 'done':
+          break;
+        default:
+          this.fixupEvent(data)
+      }
+      messagesToProcess--;
     }
+
+    this.eventProcessingTimeout = setTimeout(()=>this.processSomeMessages(), 1000*SECONDS_PER_PERIOD);
   }
 
   onOpen() {
