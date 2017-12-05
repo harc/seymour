@@ -82,9 +82,9 @@ class Highlighting {
     }
 
     this.macroViz.addListener('click', (__, event, _) => {
-        if (!event.isInlineBlockCall()) {
+        //if (!event.isInlineBlockCall()) {
           this.focusLexicalStack(event);
-        }
+        //}
     });
 
     if (this.enableHighlighting) {

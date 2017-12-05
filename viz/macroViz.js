@@ -59,7 +59,8 @@ class MacroViz extends CheckedEmitter {
     this.nodeViews.set(child, childView);
   }
 
-  onClick(event, child) { this.emit('click', event, child, this.nodeViews.get(event)); }
+  onClick(event, child) { this.emit('click', event, child, this.nodeViews.get(event));
+console.log('event', child); }
   onMouseover(event, child) { this.emit('mouseover', event, child, this.nodeViews.get(event)); }
   onMouseout(event, child) { this.emit('mouseout', event, child, this.nodeViews.get(event)); }
 }
@@ -76,7 +77,7 @@ class NodeView {
 
   render() {
     this.children = d('children', {});
-    this.label = d('label', {});
+    this.label = d('label', {}, this.event.selector || 'program');
     this.DOM = d('macroVizNode', {isFocusable: !!this.event.activationEnv.sourceLoc},
         this.label, this.children);
 
@@ -85,7 +86,7 @@ class NodeView {
     this.label.onmouseover = (event) => this.macroViz.onMouseover(event, this.event);
     this.label.onmouseout = (event) => this.macroViz.onMouseout(event, this.event);
 
-    if (!this.event.activationEnv.sourceLoc) {
+    if (/*!this.event.activationEnv.sourceLoc || */!this.event.sourceLoc) {
       this.collapse();
     }
 
