@@ -7,7 +7,7 @@ Seymour is a live programming environment that visualizes program execution as t
 
 We are excited about the prospect of using this environment in the classroom and learning from student feedback. In doing so, we hope to make Seymour a valuable learning aid for students, and ultimately, create a better user experience for all programmers.
 
-For more details, see our LIVE '16 paper:
+For more details, see our LIVE '17 paper:
 https://harc.github.io/seymour-live2017/
 
 -- Alex and Saketh
